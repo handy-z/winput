@@ -1,4 +1,5 @@
-export type * from "./keyboard";
-export type * from "./mouse";
-export type * from "./windows";
-export type * from "./image";
+export * from "./keyboard";
+export * from "./mouse";
+export * from "./windows";
+export * from "./image";
+export * from "./overlay";

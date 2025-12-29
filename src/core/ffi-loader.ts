@@ -208,6 +208,18 @@ export const user32 = dlopen(`user32.${suffix}`, {
     args: [FFIType.u64, FFIType.u64, FFIType.bool],
     returns: FFIType.int,
   },
+  InvalidateRect: {
+    args: [FFIType.ptr, FFIType.ptr, FFIType.bool],
+    returns: FFIType.bool,
+  },
+  RegisterClassExW: {
+    args: [FFIType.ptr],
+    returns: FFIType.u16,
+  },
+  DefWindowProcW: {
+    args: [FFIType.ptr, FFIType.u32, FFIType.ptr, FFIType.ptr],
+    returns: FFIType.ptr,
+  },
   EnumDisplayMonitors: {
     args: [FFIType.ptr, FFIType.ptr, FFIType.function, FFIType.ptr],
     returns: FFIType.bool,
@@ -215,6 +227,34 @@ export const user32 = dlopen(`user32.${suffix}`, {
   GetMonitorInfoW: {
     args: [FFIType.ptr, FFIType.ptr],
     returns: FFIType.bool,
+  },
+  PeekMessageW: {
+    args: [FFIType.ptr, FFIType.u64, FFIType.u32, FFIType.u32, FFIType.u32],
+    returns: FFIType.bool,
+  },
+  TranslateMessage: {
+    args: [FFIType.ptr],
+    returns: FFIType.bool,
+  },
+  DispatchMessageW: {
+    args: [FFIType.ptr],
+    returns: FFIType.ptr,
+  },
+  BeginPaint: {
+    args: [FFIType.u64, FFIType.ptr],
+    returns: FFIType.u64,
+  },
+  EndPaint: {
+    args: [FFIType.u64, FFIType.ptr],
+    returns: FFIType.bool,
+  },
+  DestroyWindow: {
+    args: [FFIType.u64],
+    returns: FFIType.bool,
+  },
+  LoadCursorW: {
+    args: [FFIType.u64, FFIType.u64], // hInstance, lpCursorName/resourceId
+    returns: FFIType.u64,
   },
 });
 
@@ -241,14 +281,14 @@ export const gdi32 = dlopen("gdi32.dll", {
   CreateCompatibleDC: { args: [FFIType.u64], returns: FFIType.u64 },
   CreateDIBSection: {
     args: [
-      FFIType.ptr,
+      FFIType.u64,
       FFIType.ptr,
       FFIType.uint32_t,
       FFIType.ptr,
       FFIType.ptr,
       FFIType.uint32_t,
     ],
-    returns: FFIType.ptr,
+    returns: FFIType.u64,
   },
   DeleteDC: { args: [FFIType.u64], returns: FFIType.bool },
   CreateSolidBrush: { args: [FFIType.uint32_t], returns: FFIType.u64 },
@@ -282,9 +322,38 @@ export const gdi32 = dlopen("gdi32.dll", {
     ],
     returns: FFIType.int,
   },
+  StretchDIBits: {
+    args: [
+      FFIType.u64,
+      FFIType.int,
+      FFIType.int,
+      FFIType.int,
+      FFIType.int,
+      FFIType.int,
+      FFIType.int,
+      FFIType.int,
+      FFIType.int,
+      FFIType.ptr,
+      FFIType.ptr,
+      FFIType.uint32_t,
+      FFIType.uint32_t,
+    ],
+    returns: FFIType.int,
+  },
   GetObjectA: {
     args: [FFIType.ptr, FFIType.int, FFIType.ptr],
     returns: FFIType.int,
+  },
+  PatBlt: {
+    args: [
+      FFIType.u64,
+      FFIType.int,
+      FFIType.int,
+      FFIType.int,
+      FFIType.int,
+      FFIType.uint32_t,
+    ],
+    returns: FFIType.bool,
   },
   CreateRectRgn: {
     args: [FFIType.int, FFIType.int, FFIType.int, FFIType.int],
@@ -295,16 +364,43 @@ export const gdi32 = dlopen("gdi32.dll", {
     returns: FFIType.u64,
   },
   CreateRoundRectRgn: {
-    args: [FFIType.int, FFIType.int, FFIType.int, FFIType.int, FFIType.int, FFIType.int],
+    args: [
+      FFIType.int,
+      FFIType.int,
+      FFIType.int,
+      FFIType.int,
+      FFIType.int,
+      FFIType.int,
+    ],
     returns: FFIType.u64,
   },
   CreatePolygonRgn: {
     args: [FFIType.ptr, FFIType.int, FFIType.int],
     returns: FFIType.u64,
   },
+  Rectangle: {
+    args: [FFIType.u64, FFIType.int, FFIType.int, FFIType.int, FFIType.int],
+    returns: FFIType.bool,
+  },
+  Ellipse: {
+    args: [FFIType.u64, FFIType.int, FFIType.int, FFIType.int, FFIType.int],
+    returns: FFIType.bool,
+  },
+  SetBkMode: {
+    args: [FFIType.u64, FFIType.int],
+    returns: FFIType.int,
+  },
+  GetStockObject: {
+    args: [FFIType.int],
+    returns: FFIType.u64,
+  },
 });
 
 export const kernel32 = dlopen(`kernel32.${suffix}`, {
+  GetModuleHandleW: {
+    args: [FFIType.ptr],
+    returns: FFIType.u64,
+  },
   GetLastError: {
     args: [],
     returns: FFIType.u32,
@@ -326,7 +422,7 @@ export const kernel32 = dlopen(`kernel32.${suffix}`, {
     returns: FFIType.bool,
   },
   RtlMoveMemory: {
-    args: [FFIType.ptr, FFIType.u64, FFIType.u64],
+    args: [FFIType.ptr, FFIType.ptr, FFIType.u64],
     returns: FFIType.void,
   },
 });
@@ -353,7 +449,13 @@ export const gdiplus = dlopen("gdiplus.dll", {
     returns: FFIType.int,
   },
   GdipBitmapLockBits: {
-    args: [FFIType.u64, FFIType.ptr, FFIType.uint32_t, FFIType.int, FFIType.ptr],
+    args: [
+      FFIType.u64,
+      FFIType.ptr,
+      FFIType.uint32_t,
+      FFIType.int,
+      FFIType.ptr,
+    ],
     returns: FFIType.int,
   },
   GdipBitmapUnlockBits: {

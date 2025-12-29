@@ -1,5 +1,5 @@
 import { user32, kernel32, gdi32 } from "../core/ffi-loader";
-import { ptr, JSCallback } from "bun:ffi";
+import { ptr, JSCallback, FFIType } from "bun:ffi";
 import type {
   WindowInfo,
   ExtendedWindowInfo,
@@ -7,8 +7,6 @@ import type {
   Size,
 } from "../types/windows";
 import { getScreenSize } from "../screen/actions";
-
-// ==================== Constants ====================
 
 const SW_MINIMIZE = 6;
 const HWND_BOTTOM = 1;
@@ -25,21 +23,197 @@ const WM_CLOSE = 0x0010;
 const GWL_STYLE = -16;
 const GWL_EXSTYLE = -20;
 const WS_EX_LAYERED = 0x80000;
-const WS_EX_TOPMOST = 0x8;
 const LWA_ALPHA = 0x2;
 const HWND_TOPMOST = -1;
 const HWND_NOTOPMOST = -2;
 const SWP_NOMOVE = 0x0002;
 const SWP_NOSIZE = 0x0001;
-const FLASHW_ALL = 0x00000003;
-const FLASHW_TIMERNOFG = 0x0000000c;
 
-// ==================== Internal Helpers ====================
+const STYLES = {
+  WS_OVERLAPPED: 0x00000000,
+  WS_POPUP: 0x80000000,
+  WS_CHILD: 0x40000000,
+  WS_MINIMIZE: 0x20000000,
+  WS_VISIBLE: 0x10000000,
+  WS_DISABLED: 0x08000000,
+  WS_CLIPSIBLINGS: 0x04000000,
+  WS_CLIPCHILDREN: 0x02000000,
+  WS_MAXIMIZE: 0x01000000,
+  WS_CAPTION: 0x00c00000,
+  WS_BORDER: 0x00800000,
+  WS_DLGFRAME: 0x00400000,
+  WS_VSCROLL: 0x00200000,
+  WS_HSCROLL: 0x00100000,
+  WS_SYSMENU: 0x00080000,
+  WS_THICKFRAME: 0x00040000,
+  WS_GROUP: 0x00020000,
+  WS_TABSTOP: 0x00010000,
+  WS_MINIMIZEBOX: 0x00020000,
+  WS_MAXIMIZEBOX: 0x00010000,
+};
+
+const EX_STYLES = {
+  WS_EX_DLGMODALFRAME: 0x00000001,
+  WS_EX_NOPARENTNOTIFY: 0x00000004,
+  WS_EX_TOPMOST: 0x00000008,
+  WS_EX_ACCEPTFILES: 0x00000010,
+  WS_EX_TRANSPARENT: 0x00000020,
+  WS_EX_MDICHILD: 0x00000040,
+  WS_EX_TOOLWINDOW: 0x00000080,
+  WS_EX_WINDOWEDGE: 0x00000100,
+  WS_EX_CLIENTEDGE: 0x00000200,
+  WS_EX_CONTEXTHELP: 0x00000400,
+  WS_EX_RIGHT: 0x00001000,
+  WS_EX_LEFT: 0x00000000,
+  WS_EX_RTLREADING: 0x00002000,
+  WS_EX_LTRREADING: 0x00000000,
+  WS_EX_LEFTSCROLLBAR: 0x00004000,
+  WS_EX_RIGHTSCROLLBAR: 0x00000000,
+  WS_EX_CONTROLPARENT: 0x00010000,
+  WS_EX_STATICEDGE: 0x00020000,
+  WS_EX_APPWINDOW: 0x00040000,
+  WS_EX_LAYERED: 0x00080000,
+  WS_EX_NOINHERITLAYOUT: 0x00100000,
+  WS_EX_NOREDIRECTIONBITMAP: 0x00200000,
+  WS_EX_LAYOUTRTL: 0x00400000,
+  WS_EX_COMPOSITED: 0x02000000,
+  WS_EX_NOACTIVATE: 0x08000000,
+};
 
 const textDecoder = new TextDecoder("utf-16le");
 const asciiDecoder = new TextDecoder("ascii");
 
-// ==================== Window Functions ====================
+export interface CreateWindowOptions {
+  windowName?: string;
+  className?: string;
+  styles?: (keyof typeof STYLES)[];
+  exStyles?: (keyof typeof EX_STYLES)[];
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+}
+
+export function createWindow(options: CreateWindowOptions = {}): bigint | null {
+  const {
+    windowName = "",
+    className = "Static",
+    styles = [
+      "WS_POPUP",
+      "WS_CAPTION",
+      "WS_SYSMENU",
+      "WS_THICKFRAME",
+      "WS_MINIMIZEBOX",
+      "WS_VISIBLE",
+    ],
+    exStyles = [],
+    x = 100,
+    y = 100,
+    width = 800,
+    height = 600,
+  } = options;
+
+  const classNameBuf = Buffer.from(className + "\0", "utf16le");
+  const windowNameBuf = Buffer.from(windowName + "\0", "utf16le");
+
+  const hwnd = user32.symbols.CreateWindowExW(
+    exStyles.reduce((a, b) => a | EX_STYLES[b], 0),
+    classNameBuf,
+    windowNameBuf,
+    styles.reduce((a, b) => a | STYLES[b], 0),
+    x,
+    y,
+    width,
+    height,
+    null,
+    null,
+    null,
+    null
+  );
+
+  return hwnd ? (hwnd as unknown as bigint) : null;
+}
+
+export function createWindowEx(
+  options: CreateWindowOptions = {}
+): bigint | null {
+  return createWindow(options);
+}
+
+// ==================== Window Class Registration ====================
+
+// Cache for window procedures to prevent GC
+const wndProcs = new Set<JSCallback>();
+
+/**
+ * Registers a custom window class.
+ * This is necessary for cleaner custom windows without default system backgrounds.
+ *
+ * @param className - Name of the class to register
+ * @param backgroundBrush - Background brush handle (default: NULL/Transparent)
+ * @returns Atom identifying the class, or 0 on failure
+ */
+export function registerWindowClass(
+  className: string,
+  backgroundBrush: number | bigint | null = null
+): number {
+  const hInstance = kernel32.symbols.GetModuleHandleW(null);
+  const classNameBuf = Buffer.from(className + "\0", "utf16le");
+
+  // Define default WindowProc
+  const wndProc = new JSCallback(
+    (hwnd, msg, wParam, lParam) => {
+      return user32.symbols.DefWindowProcW(hwnd, msg, wParam, lParam);
+    },
+    {
+      args: [FFIType.ptr, FFIType.u32, FFIType.ptr, FFIType.ptr],
+      returns: FFIType.ptr,
+    }
+  );
+  wndProcs.add(wndProc);
+
+  // WNDCLASSEXW structure
+  const wndClass = new Uint8Array(80);
+  const view = new DataView(wndClass.buffer);
+
+  view.setUint32(0, 80, true); // cbSize
+  view.setUint32(4, 3, true); // style (CS_HREDRAW | CS_VREDRAW)
+
+  // lpfnWndProc
+  const procPtr = wndProc.ptr;
+  view.setBigUint64(8, BigInt(procPtr), true);
+
+  view.setInt32(16, 0, true); // cbClsExtra
+  view.setInt32(20, 0, true); // cbWndExtra
+
+  // hInstance
+  view.setBigUint64(24, BigInt(hInstance), true);
+
+  view.setBigUint64(32, 0n, true); // hIcon
+
+  // hCursor (Load standard arrow cursor)
+  const IDC_ARROW = 32512;
+  const hCursor = (user32 as any).symbols.LoadCursorW(null, BigInt(IDC_ARROW));
+  view.setBigUint64(40, BigInt(hCursor), true);
+
+  // hbrBackground
+  if (backgroundBrush) {
+    view.setBigUint64(48, BigInt(backgroundBrush), true);
+  } else {
+    view.setBigUint64(48, 0n, true); // NULL brush for transparency
+  }
+
+  view.setBigUint64(56, 0n, true); // lpszMenuName
+
+  // lpszClassName
+  const classPtr = ptr(classNameBuf);
+  view.setBigUint64(64, BigInt(classPtr), true);
+
+  view.setBigUint64(72, 0n, true); // hIconSm
+
+  const atom = user32.symbols.RegisterClassExW(ptr(wndClass));
+  return atom;
+}
 
 export function getActiveWindow(): WindowInfo | null {
   const hwnd = user32.symbols.GetForegroundWindow();
@@ -539,71 +713,30 @@ export function killWindow(hwnd: number | bigint): boolean {
   }
 }
 
-const styles = {
-  WS_OVERLAPPED: 0x00000000,
-  WS_POPUP: 0x80000000,
-  WS_CHILD: 0x40000000,
-  WS_MINIMIZE: 0x20000000,
-  WS_VISIBLE: 0x10000000,
-  WS_DISABLED: 0x08000000,
-  WS_CLIPSIBLINGS: 0x04000000,
-  WS_CLIPCHILDREN: 0x02000000,
-  WS_MAXIMIZE: 0x01000000,
-  WS_CAPTION: 0x00c00000,
-  WS_BORDER: 0x00800000,
-  WS_DLGFRAME: 0x00400000,
-  WS_VSCROLL: 0x00200000,
-  WS_HSCROLL: 0x00100000,
-  WS_SYSMENU: 0x00080000,
-  WS_THICKFRAME: 0x00040000,
-  WS_GROUP: 0x00020000,
-  WS_TABSTOP: 0x00010000,
-  WS_MINIMIZEBOX: 0x00020000,
-  WS_MAXIMIZEBOX: 0x00010000,
-};
-
 export function getWindowStyle(hwnd: number | bigint): number {
   return user32.symbols.GetWindowLongW(BigInt(hwnd), GWL_STYLE);
 }
 
-export function setWindowStyle(hwnd: number | bigint, style: keyof typeof styles): number {
-  return user32.symbols.SetWindowLongW(BigInt(hwnd), GWL_STYLE, styles[style]);
+export function setWindowStyle(
+  hwnd: number | bigint,
+  style: keyof typeof STYLES
+): number {
+  return user32.symbols.SetWindowLongW(BigInt(hwnd), GWL_STYLE, STYLES[style]);
 }
-
-const exStyles = {
-    WS_EX_DLGMODALFRAME: 0x00000001,
-    WS_EX_NOPARENTNOTIFY: 0x00000004,
-    WS_EX_TOPMOST: 0x00000008,
-    WS_EX_ACCEPTFILES: 0x00000010,
-    WS_EX_TRANSPARENT: 0x00000020,
-    WS_EX_MDICHILD: 0x00000040,
-    WS_EX_TOOLWINDOW: 0x00000080,
-    WS_EX_WINDOWEDGE: 0x00000100,
-    WS_EX_CLIENTEDGE: 0x00000200,
-    WS_EX_CONTEXTHELP: 0x00000400,
-    WS_EX_RIGHT: 0x00001000,
-    WS_EX_LEFT: 0x00000000,
-    WS_EX_RTLREADING: 0x00002000,
-    WS_EX_LTRREADING: 0x00000000,
-    WS_EX_LEFTSCROLLBAR: 0x00004000,
-    WS_EX_RIGHTSCROLLBAR: 0x00000000,
-    WS_EX_CONTROLPARENT: 0x00010000,
-    WS_EX_STATICEDGE: 0x00020000,
-    WS_EX_APPWINDOW: 0x00040000,
-    WS_EX_LAYERED: 0x00080000,
-    WS_EX_NOINHERITLAYOUT: 0x00100000,
-    WS_EX_NOREDIRECTIONBITMAP: 0x00200000,
-    WS_EX_LAYOUTRTL: 0x00400000,
-    WS_EX_COMPOSITED: 0x02000000,
-    WS_EX_NOACTIVATE: 0x08000000,
-  };
 
 export function getWindowExStyle(hwnd: number | bigint): number {
   return user32.symbols.GetWindowLongW(BigInt(hwnd), GWL_EXSTYLE);
 }
 
-export function setWindowExStyle(hwnd: number | bigint, style: keyof typeof exStyles): number {
-  return user32.symbols.SetWindowLongW(BigInt(hwnd), GWL_EXSTYLE, exStyles[style]);
+export function setWindowExStyle(
+  hwnd: number | bigint,
+  style: keyof typeof EX_STYLES
+): number {
+  return user32.symbols.SetWindowLongW(
+    BigInt(hwnd),
+    GWL_EXSTYLE,
+    EX_STYLES[style]
+  );
 }
 
 export function getWindowMinMax(hwnd: number | bigint): number {
@@ -715,6 +848,9 @@ export function setWindowRegionPolygon(
   return user32.symbols.SetWindowRgn(BigInt(hwnd), rgn, redraw) !== 0;
 }
 
-export function resetWindowRegion(hwnd: number | bigint, redraw = true): boolean {
+export function resetWindowRegion(
+  hwnd: number | bigint,
+  redraw = true
+): boolean {
   return user32.symbols.SetWindowRgn(BigInt(hwnd), 0, redraw) !== 0;
 }

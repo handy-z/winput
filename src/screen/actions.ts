@@ -6,10 +6,9 @@ import { utils } from "../utils";
 import { image, Image } from "../image/class";
 import { Pixel } from "./pixel";
 
-// ==================== Internal Helpers ====================
-
 let cachedDC: Pointer | bigint | null = null;
 let dcTime = 0;
+
 function getDC(): Pointer | bigint | null {
   if (cachedDC && Date.now() - dcTime < 1000) return cachedDC;
   if (cachedDC) user32.symbols.ReleaseDC(null, cachedDC);
@@ -17,8 +16,6 @@ function getDC(): Pointer | bigint | null {
   dcTime = Date.now();
   return cachedDC;
 }
-
-// ==================== Screen Functions ====================
 
 export function getScreenSize() {
   return {

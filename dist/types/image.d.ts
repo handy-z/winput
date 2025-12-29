@@ -61,4 +61,56 @@ export declare enum ImageFormat {
     svg = 11,
     raw = 12
 }
+export interface OCROptions {
+    /** Language code(s) for OCR (e.g., "eng", "eng+fra"). Default: "eng" */
+    lang?: string;
+    /** Custom logger function for OCR progress */
+    logger?: (msg: any) => void;
+    /** Custom error handler */
+    errorHandler?: (err: any) => void;
+    /** Page segmentation mode (0-13). Default: 3 (Fully automatic page segmentation) */
+    tessedit_pageseg_mode?: number;
+    /** Whether to preserve spaces between words */
+    preserve_interword_spaces?: string;
+}
+export interface OCRWord {
+    /** Extracted word text */
+    text: string;
+    /** Confidence score (0-100) */
+    confidence: number;
+    /** Bounding box coordinates */
+    bbox: {
+        x0: number;
+        y0: number;
+        x1: number;
+        y1: number;
+    };
+}
+export interface OCRLine {
+    /** Full line text */
+    text: string;
+    /** Words in this line */
+    words: OCRWord[];
+    /** Confidence score for the line (0-100) */
+    confidence: number;
+    /** Bounding box coordinates */
+    bbox: {
+        x0: number;
+        y0: number;
+        x1: number;
+        y1: number;
+    };
+}
+export interface OCRResult {
+    /** Full extracted text */
+    text: string;
+    /** Overall confidence score (0-100) */
+    confidence: number;
+    /** Lines of text with bounding boxes */
+    lines: OCRLine[];
+    /** Individual words with bounding boxes */
+    words: OCRWord[];
+    /** hOCR output (HTML-based OCR format) */
+    hocr?: string;
+}
 //# sourceMappingURL=image.d.ts.map

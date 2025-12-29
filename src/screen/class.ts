@@ -1,5 +1,5 @@
 import * as actions from "./actions";
-import { ImageData } from "../types";
+import { image } from "../image";
 
 class Screen {
   /**
@@ -354,6 +354,52 @@ class Screen {
    * - `.raw` - Raw image data
    */
   imageSearch = actions.imageSearch;
+
+  /**
+   * Captures a screen region and performs OCR (Optical Character Recognition) on it.
+   *
+   * Combines screen capture with OCR in a single convenient method. Captures the specified
+   * rectangular region and extracts text using Tesseract OCR engine.
+   *
+   * @param x - X coordinate of capture region's top-left corner
+   * @param y - Y coordinate of capture region's top-left corner
+   * @param width - Width of capture region in pixels
+   * @param height - Height of capture region in pixels
+   * @param options - OCR configuration options
+   * @returns {Promise<import("../types/ocr").OCRResult | null>} Promise resolving to OCR result with extracted text, or null if failed
+   * @example
+   * ```typescript
+   * // Capture and recognize text from a screen region
+   * const result = await screen.recognizeText(100, 100, 400, 200);
+   * if (result) {
+   *   console.log("Text:", result.text);
+   *   console.log("Confidence:", result.confidence);
+   *
+   *   // Access individual words with bounding boxes
+   *   result.words.forEach(word => {
+   *     console.log(`"${word.text}" at (${word.bbox.x0}, ${word.bbox.y0})`);
+   *   });
+   * }
+   *
+   * // With language options
+   * const frenchText = await screen.recognizeText(0, 0, 800, 600, {
+   *   lang: "fra"
+   * });
+   * ```
+   */
+  async recognizeText(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    options?: import("../types/image").OCROptions
+  ): Promise<import("../types/image").OCRResult | null> {
+    const capture = this.capture(x, y, width, height);
+    if (!capture) {
+      return null;
+    }
+    return image.process(capture).ocr.recognize(options);
+  }
 }
 
 /**

@@ -1,4 +1,74 @@
 import type { WindowInfo, ExtendedWindowInfo, Rect, Size } from "../types/windows";
+declare const STYLES: {
+    WS_OVERLAPPED: number;
+    WS_POPUP: number;
+    WS_CHILD: number;
+    WS_MINIMIZE: number;
+    WS_VISIBLE: number;
+    WS_DISABLED: number;
+    WS_CLIPSIBLINGS: number;
+    WS_CLIPCHILDREN: number;
+    WS_MAXIMIZE: number;
+    WS_CAPTION: number;
+    WS_BORDER: number;
+    WS_DLGFRAME: number;
+    WS_VSCROLL: number;
+    WS_HSCROLL: number;
+    WS_SYSMENU: number;
+    WS_THICKFRAME: number;
+    WS_GROUP: number;
+    WS_TABSTOP: number;
+    WS_MINIMIZEBOX: number;
+    WS_MAXIMIZEBOX: number;
+};
+declare const EX_STYLES: {
+    WS_EX_DLGMODALFRAME: number;
+    WS_EX_NOPARENTNOTIFY: number;
+    WS_EX_TOPMOST: number;
+    WS_EX_ACCEPTFILES: number;
+    WS_EX_TRANSPARENT: number;
+    WS_EX_MDICHILD: number;
+    WS_EX_TOOLWINDOW: number;
+    WS_EX_WINDOWEDGE: number;
+    WS_EX_CLIENTEDGE: number;
+    WS_EX_CONTEXTHELP: number;
+    WS_EX_RIGHT: number;
+    WS_EX_LEFT: number;
+    WS_EX_RTLREADING: number;
+    WS_EX_LTRREADING: number;
+    WS_EX_LEFTSCROLLBAR: number;
+    WS_EX_RIGHTSCROLLBAR: number;
+    WS_EX_CONTROLPARENT: number;
+    WS_EX_STATICEDGE: number;
+    WS_EX_APPWINDOW: number;
+    WS_EX_LAYERED: number;
+    WS_EX_NOINHERITLAYOUT: number;
+    WS_EX_NOREDIRECTIONBITMAP: number;
+    WS_EX_LAYOUTRTL: number;
+    WS_EX_COMPOSITED: number;
+    WS_EX_NOACTIVATE: number;
+};
+export interface CreateWindowOptions {
+    windowName?: string;
+    className?: string;
+    styles?: (keyof typeof STYLES)[];
+    exStyles?: (keyof typeof EX_STYLES)[];
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
+}
+export declare function createWindow(options?: CreateWindowOptions): bigint | null;
+export declare function createWindowEx(options?: CreateWindowOptions): bigint | null;
+/**
+ * Registers a custom window class.
+ * This is necessary for cleaner custom windows without default system backgrounds.
+ *
+ * @param className - Name of the class to register
+ * @param backgroundBrush - Background brush handle (default: NULL/Transparent)
+ * @returns Atom identifying the class, or 0 on failure
+ */
+export declare function registerWindowClass(className: string, backgroundBrush?: number | bigint | null): number;
 export declare function getActiveWindow(): WindowInfo | null;
 export declare function getWindowTitle(hwnd?: number | bigint): string;
 export declare function getWindowRect(hwnd: number | bigint): Rect | null;
@@ -48,59 +118,10 @@ export declare function activateWindow(hwnd: number | bigint): boolean;
 export declare function waitActiveWindow(hwnd: number | bigint, timeout?: number): Promise<boolean>;
 export declare function waitNotActiveWindow(hwnd: number | bigint, timeout?: number): Promise<boolean>;
 export declare function killWindow(hwnd: number | bigint): boolean;
-declare const styles: {
-    WS_OVERLAPPED: number;
-    WS_POPUP: number;
-    WS_CHILD: number;
-    WS_MINIMIZE: number;
-    WS_VISIBLE: number;
-    WS_DISABLED: number;
-    WS_CLIPSIBLINGS: number;
-    WS_CLIPCHILDREN: number;
-    WS_MAXIMIZE: number;
-    WS_CAPTION: number;
-    WS_BORDER: number;
-    WS_DLGFRAME: number;
-    WS_VSCROLL: number;
-    WS_HSCROLL: number;
-    WS_SYSMENU: number;
-    WS_THICKFRAME: number;
-    WS_GROUP: number;
-    WS_TABSTOP: number;
-    WS_MINIMIZEBOX: number;
-    WS_MAXIMIZEBOX: number;
-};
 export declare function getWindowStyle(hwnd: number | bigint): number;
-export declare function setWindowStyle(hwnd: number | bigint, style: keyof typeof styles): number;
-declare const exStyles: {
-    WS_EX_DLGMODALFRAME: number;
-    WS_EX_NOPARENTNOTIFY: number;
-    WS_EX_TOPMOST: number;
-    WS_EX_ACCEPTFILES: number;
-    WS_EX_TRANSPARENT: number;
-    WS_EX_MDICHILD: number;
-    WS_EX_TOOLWINDOW: number;
-    WS_EX_WINDOWEDGE: number;
-    WS_EX_CLIENTEDGE: number;
-    WS_EX_CONTEXTHELP: number;
-    WS_EX_RIGHT: number;
-    WS_EX_LEFT: number;
-    WS_EX_RTLREADING: number;
-    WS_EX_LTRREADING: number;
-    WS_EX_LEFTSCROLLBAR: number;
-    WS_EX_RIGHTSCROLLBAR: number;
-    WS_EX_CONTROLPARENT: number;
-    WS_EX_STATICEDGE: number;
-    WS_EX_APPWINDOW: number;
-    WS_EX_LAYERED: number;
-    WS_EX_NOINHERITLAYOUT: number;
-    WS_EX_NOREDIRECTIONBITMAP: number;
-    WS_EX_LAYOUTRTL: number;
-    WS_EX_COMPOSITED: number;
-    WS_EX_NOACTIVATE: number;
-};
+export declare function setWindowStyle(hwnd: number | bigint, style: keyof typeof STYLES): number;
 export declare function getWindowExStyle(hwnd: number | bigint): number;
-export declare function setWindowExStyle(hwnd: number | bigint, style: keyof typeof exStyles): number;
+export declare function setWindowExStyle(hwnd: number | bigint, style: keyof typeof EX_STYLES): number;
 export declare function getWindowMinMax(hwnd: number | bigint): number;
 export declare function getWindowList(): bigint[];
 export declare function getWindowCount(): number;

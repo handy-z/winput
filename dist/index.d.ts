@@ -4,6 +4,7 @@ export * from "./mouse";
 export * from "./image";
 export * from "./window";
 export * from "./screen";
+export * from "./overlay";
 export * from "./utils";
 export type * from "./types";
 //# sourceMappingURL=index.d.ts.map

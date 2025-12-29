@@ -83,14 +83,14 @@ export async function loadImage(path: string): Promise<Image | null> {
         const data = new Uint8Array(len);
 
         if (stride === width * 4) {
-          kernel32.symbols.RtlMoveMemory(ptr(data), scan0, BigInt(len));
+          kernel32.symbols.RtlMoveMemory(ptr(data), Number(scan0), BigInt(len));
         } else {
           for (let y = 0; y < height; y++) {
-            const srcRow = scan0 + BigInt(y * stride);
-            const dstRow = ptr(data) + y * width * 4;
+            const srcRow = Number(scan0) + y * stride;
+            const dstRow = Number(ptr(data)) + y * width * 4;
             kernel32.symbols.RtlMoveMemory(
               dstRow as any,
-              srcRow,
+              srcRow as any,
               BigInt(width * 4)
             );
           }

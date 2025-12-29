@@ -192,6 +192,18 @@ export declare const user32: import("bun:ffi").Library<{
         args: (FFIType.uint64_t | FFIType.bool)[];
         returns: FFIType.int32_t;
     };
+    InvalidateRect: {
+        args: (FFIType.bool | FFIType.ptr)[];
+        returns: FFIType.bool;
+    };
+    RegisterClassExW: {
+        args: FFIType.ptr[];
+        returns: FFIType.uint16_t;
+    };
+    DefWindowProcW: {
+        args: (FFIType.uint32_t | FFIType.ptr)[];
+        returns: FFIType.ptr;
+    };
     EnumDisplayMonitors: {
         args: (FFIType.ptr | FFIType.function)[];
         returns: FFIType.bool;
@@ -199,6 +211,34 @@ export declare const user32: import("bun:ffi").Library<{
     GetMonitorInfoW: {
         args: FFIType.ptr[];
         returns: FFIType.bool;
+    };
+    PeekMessageW: {
+        args: (FFIType.uint32_t | FFIType.uint64_t | FFIType.ptr)[];
+        returns: FFIType.bool;
+    };
+    TranslateMessage: {
+        args: FFIType.ptr[];
+        returns: FFIType.bool;
+    };
+    DispatchMessageW: {
+        args: FFIType.ptr[];
+        returns: FFIType.ptr;
+    };
+    BeginPaint: {
+        args: (FFIType.uint64_t | FFIType.ptr)[];
+        returns: FFIType.uint64_t;
+    };
+    EndPaint: {
+        args: (FFIType.uint64_t | FFIType.ptr)[];
+        returns: FFIType.bool;
+    };
+    DestroyWindow: {
+        args: FFIType.uint64_t[];
+        returns: FFIType.bool;
+    };
+    LoadCursorW: {
+        args: FFIType.uint64_t[];
+        returns: FFIType.uint64_t;
     };
 }>;
 export declare const gdi32: import("bun:ffi").Library<{
@@ -231,8 +271,8 @@ export declare const gdi32: import("bun:ffi").Library<{
         returns: FFIType.uint64_t;
     };
     CreateDIBSection: {
-        args: (FFIType.uint32_t | FFIType.ptr)[];
-        returns: FFIType.ptr;
+        args: (FFIType.uint32_t | FFIType.uint64_t | FFIType.ptr)[];
+        returns: FFIType.uint64_t;
     };
     DeleteDC: {
         args: FFIType.uint64_t[];
@@ -254,9 +294,17 @@ export declare const gdi32: import("bun:ffi").Library<{
         args: (FFIType.uint32_t | FFIType.uint64_t | FFIType.ptr)[];
         returns: FFIType.int32_t;
     };
+    StretchDIBits: {
+        args: (FFIType.int32_t | FFIType.uint32_t | FFIType.uint64_t | FFIType.ptr)[];
+        returns: FFIType.int32_t;
+    };
     GetObjectA: {
         args: (FFIType.int32_t | FFIType.ptr)[];
         returns: FFIType.int32_t;
+    };
+    PatBlt: {
+        args: (FFIType.int32_t | FFIType.uint32_t | FFIType.uint64_t)[];
+        returns: FFIType.bool;
     };
     CreateRectRgn: {
         args: FFIType.int32_t[];
@@ -274,8 +322,28 @@ export declare const gdi32: import("bun:ffi").Library<{
         args: (FFIType.int32_t | FFIType.ptr)[];
         returns: FFIType.uint64_t;
     };
+    Rectangle: {
+        args: (FFIType.int32_t | FFIType.uint64_t)[];
+        returns: FFIType.bool;
+    };
+    Ellipse: {
+        args: (FFIType.int32_t | FFIType.uint64_t)[];
+        returns: FFIType.bool;
+    };
+    SetBkMode: {
+        args: (FFIType.int32_t | FFIType.uint64_t)[];
+        returns: FFIType.int32_t;
+    };
+    GetStockObject: {
+        args: FFIType.int32_t[];
+        returns: FFIType.uint64_t;
+    };
 }>;
 export declare const kernel32: import("bun:ffi").Library<{
+    GetModuleHandleW: {
+        args: FFIType.ptr[];
+        returns: FFIType.uint64_t;
+    };
     GetLastError: {
         args: any[];
         returns: FFIType.uint32_t;

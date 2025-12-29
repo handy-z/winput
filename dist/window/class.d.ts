@@ -1,6 +1,47 @@
 import * as actions from "./actions";
 declare class Window {
     /**
+     * Creates a new window with customizable options.
+     * Provides a high-level API for window creation with sensible defaults.
+     *
+     * @param options - Window creation options including name, size, position, and styles
+     * @returns {bigint | null} Window handle if successful, null if creation failed
+     *
+     * @example
+     * const hwnd = window.create({
+     *   windowName: "My Window",
+     *   width: 800,
+     *   height: 600,
+     *   x: 100,
+     *   y: 100
+     * });
+     * if (hwnd) {
+     *   console.log(`Created window with handle: ${hwnd}`);
+     * }
+     */
+    create: typeof actions.createWindow;
+    /**
+     * Registers a custom window class.
+     * This is necessary for creating custom windows with specific behaviors and backgrounds.
+     * Must be called before creating a window with the specified class name.
+     *
+     * @param className - Name of the window class to register
+     * @param backgroundBrush - Optional background brush handle from GetStockObject. Use null for transparent background (default: null)
+     * @returns {number} Atom identifying the registered class, or 0 if registration failed
+     *
+     * @example
+     * const BLACK_BRUSH = 4;
+     * const brush = gdi32.symbols.GetStockObject(BLACK_BRUSH);
+     * const atom = window.registerClass("MyCustomClass", brush);
+     * if (atom) {
+     *   const hwnd = window.create({
+     *     className: "MyCustomClass",
+     *     windowName: "Custom Window"
+     *   });
+     * }
+     */
+    registerClass: typeof actions.registerWindowClass;
+    /**
      * Retrieves detailed information about the currently active (foreground) window.
      *
      * @returns {WindowInfo | null} Object containing window handle, title, bounding rectangle, and fullscreen status, or null if no active window
