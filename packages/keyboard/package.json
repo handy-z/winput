@@ -1,6 +1,6 @@
 {
   "name": "@winput/keyboard",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Windows keyboard automation for Bun - simulate keystrokes, hotkeys, and listen to key events",
   "type": "module",
   "main": "./dist/index.js",

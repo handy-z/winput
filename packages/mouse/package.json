@@ -1,6 +1,6 @@
 {
   "name": "@winput/mouse",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Windows mouse automation for Bun - simulate clicks, movements, and listen to mouse events",
   "type": "module",
   "main": "./dist/index.js",
