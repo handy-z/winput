@@ -42,6 +42,7 @@
     "win32"
   ],
   "dependencies": {
+    
     "@winput/utils": "latest"
   },
   "peerDependencies": {
