@@ -304,7 +304,7 @@ async function release() {
   const args = process.argv.slice(2);
 
   const dryRun = args.includes("--dry-run");
-  const normalizedArgs = args.map(arg => arg.replace(/^--/, ''));
+  const normalizedArgs = args.map((arg) => arg.replace(/^--/, ""));
   const bumpType = normalizedArgs.find((arg) =>
     ["patch", "minor", "major"].includes(arg)
   ) as BumpType | undefined;
@@ -386,14 +386,43 @@ async function release() {
     }
   }
 
+  if (bumpType && !dryRun) {
+    const spinner = createSpinner("Committing version bumps").start();
+
+    await runCommand("git", ["add", "-A"], PROJECT_ROOT);
+
+    const version = publishedVersion || "latest";
+    const commitResult = await runCommand(
+      "git",
+      ["commit", "-m", `release: v${version}`],
+      PROJECT_ROOT
+    );
+
+    if (commitResult.success) {
+      const pushResult = await runCommand(
+        "git",
+        ["push", "origin", "main"],
+        PROJECT_ROOT
+      );
+
+      if (pushResult.success) {
+        spinner.success({ text: `Committed and pushed v${version}` });
+      } else {
+        spinner.warn({ text: "Committed but failed to push" });
+      }
+    } else {
+      spinner.warn({ text: "Nothing to commit" });
+    }
+
+    if (publishedVersion) {
+      await createReleaseTag(publishedVersion, dryRun);
+    }
+  }
+  
   if (allSuccess) {
     console.log(
       `\n${c.bright}${c.bgGreen}${c.white} ✨ All packages published! ${c.reset}\n`
     );
-
-    if (publishedVersion && bumpType) {
-      await createReleaseTag(publishedVersion, dryRun);
-    }
   } else {
     console.log(
       `\n${c.brightRed}✗ Release failed - some packages may need manual publishing${c.reset}\n`

@@ -1,6 +1,6 @@
 {
   "name": "@winput/window",
-  "version": "1.0.4",
+  "version": "1.0.7",
   "description": "Windows window management for Bun - find, move, resize, and manipulate windows",
   "type": "module",
   "main": "./dist/index.js",
