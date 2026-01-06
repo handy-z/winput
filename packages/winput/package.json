@@ -1,6 +1,6 @@
 {
   "name": "winput",
-  "version": "1.0.10",
+  "version": "1.0.0",
   "description": "Windows automation library - keyboard, mouse, window, screen, image, and overlay control",
   "type": "module",
   "main": "dist/index.js",
