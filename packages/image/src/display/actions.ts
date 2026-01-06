@@ -2,16 +2,17 @@ import { user32, gdi32, gdiplus } from "../core";
 import { ptr } from "bun:ffi";
 import { ImageData } from "../types";
 import type { Image } from "../class";
-import * as windowActions from "@winput/window";
 
 const WS_POPUP = 0x80000000;
 const WS_CAPTION = 0x00c00000;
 const WS_SYSMENU = 0x00080000;
+const WS_THICKFRAME = 0x00040000;
 const WS_MINIMIZEBOX = 0x00020000;
 const WS_VISIBLE = 0x10000000;
 const SW_SHOW = 5;
 const WM_PAINT = 0x000f;
 const WM_KEYDOWN = 0x0100;
+const WM_CLOSE = 0x0010;
 const DIB_RGB_COLORS = 0;
 const SRCCOPY = 0x00cc0020;
 
@@ -39,6 +40,61 @@ function ensureGdiPlus(): void {
   gdiplusToken = tokenBuf[0];
 }
 
+interface CreateWindowOptions {
+  windowName?: string;
+  className?: string;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+}
+
+function createWindow(options: CreateWindowOptions = {}): bigint | null {
+  const {
+    windowName = "",
+    className = "Static",
+    x = 100,
+    y = 100,
+    width = 800,
+    height = 600,
+  } = options;
+
+  const classNameBuf = Buffer.from(className + "\0", "utf16le");
+  const windowNameBuf = Buffer.from(windowName + "\0", "utf16le");
+
+  const style = WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_VISIBLE;
+  const exStyle = 0;
+
+  const hwnd = user32.symbols.CreateWindowExW(
+    exStyle,
+    classNameBuf,
+    windowNameBuf,
+    style,
+    x,
+    y,
+    width,
+    height,
+    null,
+    null,
+    null,
+    null
+  );
+
+  return hwnd ? (hwnd as unknown as bigint) : null;
+}
+
+function showWindow(hwnd: bigint): boolean {
+  return user32.symbols.ShowWindow(hwnd, SW_SHOW);
+}
+
+function closeWindow(hwnd: bigint): boolean {
+  return user32.symbols.PostMessageA(hwnd, WM_CLOSE, 0n, 0n);
+}
+
+function isWindow(hwnd: bigint): boolean {
+  return user32.symbols.IsWindow(hwnd);
+}
+
 export function imshow(
   windowName: string,
   img: Image | ImageData,
@@ -47,24 +103,16 @@ export function imshow(
   ensureGdiPlus();
 
   const imageData =
-    img instanceof Object && "img" in img ? (img as any).img : img;
+    img instanceof Object && "img" in img ? (img as { img: ImageData }).img : img;
   const { width, height, buffer } = imageData;
 
   if (activeWindows.has(windowName)) {
     destroyWindow(windowName);
   }
 
-  const hwnd = windowActions.createWindow({
+  const hwnd = createWindow({
     windowName,
     className: "Static",
-    styles: [
-      "WS_POPUP",
-      "WS_CAPTION",
-      "WS_SYSMENU",
-      "WS_THICKFRAME",
-      "WS_MINIMIZEBOX",
-      "WS_VISIBLE",
-    ],
     x: 100,
     y: 100,
     width,
@@ -77,10 +125,10 @@ export function imshow(
 
   activeWindows.set(windowName, hwnd);
 
-  windowActions.showWindow(hwnd);
+  showWindow(hwnd);
   user32.symbols.UpdateWindow(hwnd);
 
-  const hdc = user32.symbols.GetDC(hwnd as any);
+  const hdc = user32.symbols.GetDC(hwnd as unknown as ReturnType<typeof ptr>);
   if (!hdc) {
     throw new Error("Failed to get window DC");
   }
@@ -118,7 +166,7 @@ export function imshow(
     const MSG = new Uint8Array(48);
 
     while (true) {
-      if (!windowActions.isWindow(hwnd)) {
+      if (!isWindow(hwnd)) {
         activeWindows.delete(windowName);
         break;
       }
@@ -131,7 +179,7 @@ export function imshow(
           const message = msgView.getUint32(8, true);
 
           if (message === WM_PAINT) {
-            const paintHdc = user32.symbols.GetDC(hwnd as any);
+            const paintHdc = user32.symbols.GetDC(hwnd as unknown as ReturnType<typeof ptr>);
             if (paintHdc) {
               gdi32.symbols.StretchDIBits(
                 paintHdc,
@@ -181,7 +229,7 @@ export function imshow(
 export function destroyWindow(windowName: string): void {
   const hwnd = activeWindows.get(windowName);
   if (hwnd) {
-    windowActions.closeWindow(hwnd);
+    closeWindow(hwnd);
     activeWindows.delete(windowName);
   }
 }

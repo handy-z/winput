@@ -43,7 +43,6 @@
   ],
   "dependencies": {
     "tesseract.js": "^7.0.0",
-    "@winput/window": "latest",
     "@winput/utils": "latest"
   },
   "peerDependencies": {

@@ -1,7 +1,3 @@
-/**
- * Optimized FFI loader for overlay package
- * Contains user32 and gdi32 functions for overlay drawing
- */
 import { dlopen, FFIType, suffix } from "bun:ffi";
 
 export const user32 = dlopen(`user32.${suffix}`, {
@@ -17,6 +13,21 @@ export const user32 = dlopen(`user32.${suffix}`, {
   TranslateMessage: { args: [FFIType.ptr], returns: FFIType.bool },
   DispatchMessageW: { args: [FFIType.ptr], returns: FFIType.ptr },
   UpdateWindow: { args: [FFIType.u64], returns: FFIType.bool },
+  CreateWindowExW: {
+    args: [FFIType.uint32_t, FFIType.ptr, FFIType.ptr, FFIType.uint32_t, FFIType.int, FFIType.int, FFIType.int, FFIType.int, FFIType.ptr, FFIType.ptr, FFIType.ptr, FFIType.ptr],
+    returns: FFIType.ptr,
+  },
+  DefWindowProcW: {
+    args: [FFIType.ptr, FFIType.u32, FFIType.ptr, FFIType.ptr],
+    returns: FFIType.ptr,
+  },
+  RegisterClassExW: { args: [FFIType.ptr], returns: FFIType.u16 },
+  LoadCursorW: { args: [FFIType.u64, FFIType.u64], returns: FFIType.u64 },
+  ShowWindow: { args: [FFIType.u64, FFIType.int], returns: FFIType.bool },
+});
+
+export const kernel32 = dlopen(`kernel32.${suffix}`, {
+  GetModuleHandleW: { args: [FFIType.ptr], returns: FFIType.u64 },
 });
 
 export const gdi32 = dlopen("gdi32.dll", {

@@ -1,7 +1,3 @@
-/**
- * Optimized FFI loader for window package
- * Contains all user32, kernel32, gdi32 functions for window management
- */
 import { dlopen, FFIType, suffix } from "bun:ffi";
 
 export const user32 = dlopen(`user32.${suffix}`, {

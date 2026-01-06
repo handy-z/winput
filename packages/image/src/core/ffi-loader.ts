@@ -33,6 +33,11 @@ export const user32 = dlopen(`user32.${suffix}`, {
   },
   TranslateMessage: { args: [FFIType.ptr], returns: FFIType.bool },
   DispatchMessageW: { args: [FFIType.ptr], returns: FFIType.ptr },
+  CreateWindowExW: {
+    args: [FFIType.uint32_t, FFIType.ptr, FFIType.ptr, FFIType.uint32_t, FFIType.int, FFIType.int, FFIType.int, FFIType.int, FFIType.ptr, FFIType.ptr, FFIType.ptr, FFIType.ptr],
+    returns: FFIType.ptr,
+  },
+  PostMessageA: { args: [FFIType.u64, FFIType.u32, FFIType.u64, FFIType.u64], returns: FFIType.bool },
 });
 
 export const gdi32 = dlopen("gdi32.dll", {

@@ -6,7 +6,6 @@ import type {
   Rect,
   Size,
 } from "./types";
-import { getScreenSize } from "@winput/screen";
 
 const SW_MINIMIZE = 6;
 const HWND_BOTTOM = 1;
@@ -83,6 +82,13 @@ const EX_STYLES = {
 const textDecoder = new TextDecoder("utf-16le");
 const asciiDecoder = new TextDecoder("ascii");
 
+function getScreenSize(): Size {
+  return {
+    width: user32.symbols.GetSystemMetrics(0),
+    height: user32.symbols.GetSystemMetrics(1),
+  };
+}
+
 export interface CreateWindowOptions {
   windowName?: string;
   className?: string;
@@ -140,19 +146,8 @@ export function createWindowEx(
   return createWindow(options);
 }
 
-// ==================== Window Class Registration ====================
-
-// Cache for window procedures to prevent GC
 const wndProcs = new Set<JSCallback>();
 
-/**
- * Registers a custom window class.
- * This is necessary for cleaner custom windows without default system backgrounds.
- *
- * @param className - Name of the class to register
- * @param backgroundBrush - Background brush handle (default: NULL/Transparent)
- * @returns Atom identifying the class, or 0 on failure
- */
 export function registerWindowClass(
   className: string,
   backgroundBrush: number | bigint | null = null
@@ -160,7 +155,6 @@ export function registerWindowClass(
   const hInstance = kernel32.symbols.GetModuleHandleW(null);
   const classNameBuf = Buffer.from(className + "\0", "utf16le");
 
-  // Define default WindowProc
   const wndProc = new JSCallback(
     (hwnd, msg, wParam, lParam) => {
       return user32.symbols.DefWindowProcW(hwnd, msg, wParam, lParam);
@@ -172,44 +166,36 @@ export function registerWindowClass(
   );
   wndProcs.add(wndProc);
 
-  // WNDCLASSEXW structure
   const wndClass = new Uint8Array(80);
   const view = new DataView(wndClass.buffer);
 
-  view.setUint32(0, 80, true); // cbSize
-  view.setUint32(4, 3, true); // style (CS_HREDRAW | CS_VREDRAW)
+  view.setUint32(0, 80, true);
+  view.setUint32(4, 3, true);
 
-  // lpfnWndProc
   const procPtr = wndProc.ptr;
   view.setBigUint64(8, BigInt(procPtr), true);
 
-  view.setInt32(16, 0, true); // cbClsExtra
-  view.setInt32(20, 0, true); // cbWndExtra
+  view.setInt32(16, 0, true);
+  view.setInt32(20, 0, true);
 
-  // hInstance
   view.setBigUint64(24, BigInt(hInstance), true);
 
-  view.setBigUint64(32, 0n, true); // hIcon
+  view.setBigUint64(32, 0n, true);
 
-  // hCursor (Load standard arrow cursor)
   const IDC_ARROW = 32512;
   const hCursor = (user32 as any).symbols.LoadCursorW(null, BigInt(IDC_ARROW));
   view.setBigUint64(40, BigInt(hCursor), true);
-
-  // hbrBackground
   if (backgroundBrush) {
     view.setBigUint64(48, BigInt(backgroundBrush), true);
   } else {
-    view.setBigUint64(48, 0n, true); // NULL brush for transparency
+    view.setBigUint64(48, 0n, true);
   }
 
-  view.setBigUint64(56, 0n, true); // lpszMenuName
-
-  // lpszClassName
+  view.setBigUint64(56, 0n, true);
   const classPtr = ptr(classNameBuf);
   view.setBigUint64(64, BigInt(classPtr), true);
 
-  view.setBigUint64(72, 0n, true); // hIconSm
+  view.setBigUint64(72, 0n, true);
 
   const atom = user32.symbols.RegisterClassExW(ptr(wndClass));
   return atom;

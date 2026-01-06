@@ -41,9 +41,6 @@
   "os": [
     "win32"
   ],
-  "dependencies": {
-    "@winput/window": "latest"
-  },
   "peerDependencies": {
     "typescript": "^5.0.0"
   }
