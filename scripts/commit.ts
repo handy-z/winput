@@ -171,8 +171,6 @@ async function rollbackAll() {
 }
 
 async function commit() {
-  console.clear()
-
   header('winput commit')
 
   try {
