@@ -1,6 +1,6 @@
 {
   "name": "@winput/screen",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Windows screen capture and pixel analysis for Bun - capture screenshots, read pixels, search for colors",
   "type": "module",
   "main": "./dist/index.js",
