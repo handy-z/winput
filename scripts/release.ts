@@ -157,7 +157,6 @@ async function commitAndPush(version: string): Promise<void> {
 }
 
 async function release() {
-  console.clear();
   const args = process.argv.slice(2);
   const dryRun = args.includes("--dry-run");
   const bumpType = args.map(a => a.replace(/^--/, ""))
