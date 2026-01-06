@@ -80,8 +80,29 @@ async function getNpmVersion(name: string): Promise<string | null> {
   }
 }
 
+async function getLastTag(): Promise<string | null> {
+  const { ok, out } = await exec("git", ["describe", "--tags", "--abbrev=0"], PROJECT_ROOT);
+  return ok ? out.trim() : null;
+}
+
+async function hasChanges(dir: string, sinceTag: string | null): Promise<boolean> {
+  const pkgPath = `packages/${dir}`;
+  
+  const status = await exec("git", ["status", "--porcelain", "--", pkgPath], PROJECT_ROOT);
+  if (status.ok && status.out.trim().length > 0) return true;
+  
+  if (sinceTag) {
+    const diff = await exec("git", ["diff", "--name-only", sinceTag, "HEAD", "--", pkgPath], PROJECT_ROOT);
+    if (diff.ok && diff.out.trim().length > 0) return true;
+  }
+  
+  return false;
+}
+
 async function getPackages(): Promise<PackageInfo[]> {
-  const spinner = createSpinner("Checking npm versions").start();
+  const spinner = createSpinner("Checking packages").start();
+  
+  const lastTag = await getLastTag();
   
   const packages = await Promise.all(
     PUBLISH_ORDER.map(async (dir) => {
@@ -92,6 +113,9 @@ async function getPackages(): Promise<PackageInfo[]> {
       const name = pkg.name as string;
       const version = pkg.version as string;
       const npmVersion = await getNpmVersion(name);
+      const changed = await hasChanges(dir, lastTag);
+      
+      const needsPublish = !npmVersion || version !== npmVersion || changed;
       
       return {
         name,
@@ -99,12 +123,12 @@ async function getPackages(): Promise<PackageInfo[]> {
         version,
         originalVersion: version,
         npmVersion,
-        needsPublish: !npmVersion || version !== npmVersion,
+        needsPublish,
       };
     })
   );
   
-  spinner.success({ text: "Checked npm versions" });
+  spinner.success({ text: `Checked packages${lastTag ? ` (since ${lastTag})` : ""}` });
   return packages.filter((p): p is PackageInfo => p !== null);
 }
 

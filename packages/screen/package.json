@@ -1,6 +1,6 @@
 {
   "name": "@winput/screen",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Windows screen capture and pixel analysis for Bun - capture screenshots, read pixels, search for colors",
   "type": "module",
   "main": "./dist/index.js",
@@ -42,7 +42,6 @@
     "win32"
   ],
   "dependencies": {
-    
     "@winput/utils": "latest"
   },
   "peerDependencies": {
