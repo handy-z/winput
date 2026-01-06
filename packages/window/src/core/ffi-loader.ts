@@ -1,0 +1,76 @@
+/**
+ * Optimized FFI loader for window package
+ * Contains all user32, kernel32, gdi32 functions for window management
+ */
+import { dlopen, FFIType, suffix } from "bun:ffi";
+
+export const user32 = dlopen(`user32.${suffix}`, {
+  CreateWindowExW: {
+    args: [FFIType.uint32_t, FFIType.ptr, FFIType.ptr, FFIType.uint32_t, FFIType.int, FFIType.int, FFIType.int, FFIType.int, FFIType.ptr, FFIType.ptr, FFIType.ptr, FFIType.ptr],
+    returns: FFIType.ptr,
+  },
+  DefWindowProcW: {
+    args: [FFIType.ptr, FFIType.u32, FFIType.ptr, FFIType.ptr],
+    returns: FFIType.ptr,
+  },
+  RegisterClassExW: { args: [FFIType.ptr], returns: FFIType.u16 },
+  LoadCursorW: { args: [FFIType.u64, FFIType.u64], returns: FFIType.u64 },
+  GetForegroundWindow: { args: [], returns: FFIType.u64 },
+  GetWindowTextW: { args: [FFIType.u64, FFIType.ptr, FFIType.int], returns: FFIType.int },
+  GetWindowRect: { args: [FFIType.u64, FFIType.ptr], returns: FFIType.bool },
+  GetWindowLongW: { args: [FFIType.u64, FFIType.int], returns: FFIType.int },
+  SetWindowLongW: { args: [FFIType.u64, FFIType.int, FFIType.int], returns: FFIType.int },
+  IsWindowVisible: { args: [FFIType.u64], returns: FFIType.bool },
+  SetForegroundWindow: { args: [FFIType.u64], returns: FFIType.bool },
+  FindWindowA: { args: [FFIType.ptr, FFIType.ptr], returns: FFIType.u64 },
+  GetWindowThreadProcessId: { args: [FFIType.u64, FFIType.ptr], returns: FFIType.u32 },
+  GetClassNameA: { args: [FFIType.u64, FFIType.ptr, FFIType.int], returns: FFIType.int },
+  IsIconic: { args: [FFIType.u64], returns: FFIType.bool },
+  IsZoomed: { args: [FFIType.u64], returns: FFIType.bool },
+  ShowWindow: { args: [FFIType.u64, FFIType.int], returns: FFIType.bool },
+  PostMessageA: { args: [FFIType.u64, FFIType.u32, FFIType.u64, FFIType.u64], returns: FFIType.bool },
+  MoveWindow: { args: [FFIType.u64, FFIType.int, FFIType.int, FFIType.int, FFIType.int, FFIType.bool], returns: FFIType.bool },
+  GetClientRect: { args: [FFIType.u64, FFIType.ptr], returns: FFIType.bool },
+  IsWindow: { args: [FFIType.u64], returns: FFIType.bool },
+  EnumWindows: { args: [FFIType.function, FFIType.i64], returns: FFIType.bool },
+  EnumChildWindows: { args: [FFIType.u64, FFIType.function, FFIType.i64], returns: FFIType.bool },
+  FlashWindow: { args: [FFIType.u64, FFIType.bool], returns: FFIType.bool },
+  SetLayeredWindowAttributes: { args: [FFIType.u64, FFIType.uint32_t, FFIType.int8_t, FFIType.uint32_t], returns: FFIType.bool },
+  SetWindowPos: { args: [FFIType.u64, FFIType.u64, FFIType.int, FFIType.int, FFIType.int, FFIType.int, FFIType.uint32_t], returns: FFIType.bool },
+  SetWindowTextW: { args: [FFIType.u64, FFIType.ptr], returns: FFIType.bool },
+  EnableWindow: { args: [FFIType.u64, FFIType.bool], returns: FFIType.bool },
+  RedrawWindow: { args: [FFIType.u64, FFIType.ptr, FFIType.u64, FFIType.u32], returns: FFIType.bool },
+  ClientToScreen: { args: [FFIType.u64, FFIType.ptr], returns: FFIType.bool },
+  ScreenToClient: { args: [FFIType.u64, FFIType.ptr], returns: FFIType.bool },
+  SendMessageA: { args: [FFIType.u64, FFIType.u32, FFIType.u64, FFIType.u64], returns: FFIType.ptr },
+  SetWindowRgn: { args: [FFIType.u64, FFIType.u64, FFIType.bool], returns: FFIType.int },
+  GetDC: { args: [FFIType.ptr], returns: FFIType.u64 },
+  ReleaseDC: { args: [FFIType.u64, FFIType.u64], returns: FFIType.int },
+  GetWindowDC: { args: [FFIType.u64], returns: FFIType.u64 },
+  PrintWindow: { args: [FFIType.u64, FFIType.u64, FFIType.u32], returns: FFIType.bool },
+  DestroyWindow: { args: [FFIType.u64], returns: FFIType.bool },
+  GetSystemMetrics: { args: [FFIType.int], returns: FFIType.int },
+});
+
+export const kernel32 = dlopen(`kernel32.${suffix}`, {
+  GetModuleHandleW: { args: [FFIType.ptr], returns: FFIType.u64 },
+  GetLastError: { args: [], returns: FFIType.u32 },
+  OpenProcess: { args: [FFIType.u32, FFIType.bool, FFIType.u32], returns: FFIType.u64 },
+  CloseHandle: { args: [FFIType.u64], returns: FFIType.bool },
+  QueryFullProcessImageNameW: { args: [FFIType.u64, FFIType.u32, FFIType.ptr, FFIType.ptr], returns: FFIType.bool },
+  TerminateProcess: { args: [FFIType.u64, FFIType.u32], returns: FFIType.bool },
+});
+
+export const gdi32 = dlopen("gdi32.dll", {
+  CreateCompatibleDC: { args: [FFIType.u64], returns: FFIType.u64 },
+  CreateCompatibleBitmap: { args: [FFIType.u64, FFIType.int, FFIType.int], returns: FFIType.u64 },
+  SelectObject: { args: [FFIType.u64, FFIType.u64], returns: FFIType.u64 },
+  BitBlt: { args: [FFIType.u64, FFIType.int, FFIType.int, FFIType.int, FFIType.int, FFIType.u64, FFIType.int, FFIType.int, FFIType.uint32_t], returns: FFIType.bool },
+  DeleteDC: { args: [FFIType.u64], returns: FFIType.bool },
+  DeleteObject: { args: [FFIType.u64], returns: FFIType.bool },
+  CreateRectRgn: { args: [FFIType.int, FFIType.int, FFIType.int, FFIType.int], returns: FFIType.u64 },
+  CreateEllipticRgn: { args: [FFIType.int, FFIType.int, FFIType.int, FFIType.int], returns: FFIType.u64 },
+  CreateRoundRectRgn: { args: [FFIType.int, FFIType.int, FFIType.int, FFIType.int, FFIType.int, FFIType.int], returns: FFIType.u64 },
+  CreatePolygonRgn: { args: [FFIType.ptr, FFIType.int, FFIType.int], returns: FFIType.u64 },
+  GetStockObject: { args: [FFIType.int], returns: FFIType.u64 },
+});

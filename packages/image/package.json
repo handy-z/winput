@@ -1,0 +1,52 @@
+{
+  "name": "@winput/image",
+  "version": "1.0.0",
+  "description": "Windows image processing for Bun - load, save, and transform images with chainable API",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "bun build src/index.ts --outdir=dist --target=bun --format=esm --minify && bunx tsc --emitDeclarationOnly --outDir dist",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "bun",
+    "windows",
+    "image",
+    "processing",
+    "gdi",
+    "ocr"
+  ],
+  "author": "handy-z",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wuw-shz/winput.git",
+    "directory": "packages/image"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "os": [
+    "win32"
+  ],
+  "dependencies": {
+    "tesseract.js": "^7.0.0",
+    "@winput/window": "workspace:*",
+    "@winput/utils": "workspace:*"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

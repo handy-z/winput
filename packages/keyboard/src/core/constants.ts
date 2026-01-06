@@ -1,0 +1,3 @@
+export const KEYEVENTF_SCANCODE = 0x0008;
+export const KEYEVENTF_KEYUP = 0x0002;
+export const KEYEVENTF_EXTENDEDKEY = 0x0001;

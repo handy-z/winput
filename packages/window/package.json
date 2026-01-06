@@ -1,0 +1,50 @@
+{
+  "name": "@winput/window",
+  "version": "1.0.0",
+  "description": "Windows window management for Bun - find, move, resize, and manipulate windows",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "bun build src/index.ts --outdir=dist --target=bun --format=esm --minify && bunx tsc --emitDeclarationOnly --outDir dist",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "bun",
+    "windows",
+    "window",
+    "automation",
+    "hwnd",
+    "win32"
+  ],
+  "author": "handy-z",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wuw-shz/winput.git",
+    "directory": "packages/window"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "os": [
+    "win32"
+  ],
+  "dependencies": {
+    "@winput/screen": "workspace:*"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

@@ -1,0 +1,12 @@
+node_modules
+*.log
+.DS_Store
+.env
+structure.md
+structure.ts
+/tests
+/examples
+/dist
+/packages/*/dist
+/.agent
+eng.traineddata

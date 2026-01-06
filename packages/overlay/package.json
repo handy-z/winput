@@ -1,0 +1,50 @@
+{
+  "name": "@winput/overlay",
+  "version": "1.0.0",
+  "description": "Windows overlay drawing for Bun - create transparent overlays and draw on screen",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "bun build src/index.ts --outdir=dist --target=bun --format=esm --minify && bunx tsc --emitDeclarationOnly --outDir dist",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "bun",
+    "windows",
+    "overlay",
+    "drawing",
+    "gdi",
+    "pen"
+  ],
+  "author": "handy-z",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wuw-shz/winput.git",
+    "directory": "packages/overlay"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "os": [
+    "win32"
+  ],
+  "dependencies": {
+    "@winput/window": "workspace:*"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

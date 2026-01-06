@@ -1,0 +1,19 @@
+export const MOUSEEVENTF_MOVE = 0x0001;
+export const MOUSEEVENTF_LEFTDOWN = 0x0002;
+export const MOUSEEVENTF_LEFTUP = 0x0004;
+export const MOUSEEVENTF_RIGHTDOWN = 0x0008;
+export const MOUSEEVENTF_RIGHTUP = 0x0010;
+export const MOUSEEVENTF_MIDDLEDOWN = 0x0020;
+export const MOUSEEVENTF_MIDDLEUP = 0x0040;
+export const MOUSEEVENTF_XDOWN = 0x0080;
+export const MOUSEEVENTF_XUP = 0x0100;
+export const MOUSEEVENTF_WHEEL = 0x0800;
+export const MOUSEEVENTF_HWHEEL = 0x01000;
+export const MOUSEEVENTF_ABSOLUTE = 0x8000;
+export const MOUSEEVENTF_VIRTUALDESK = 0x4000;
+
+export const XBUTTON1 = 0x0001;
+export const XBUTTON2 = 0x0002;
+
+export const SM_CXSCREEN = 0;
+export const SM_CYSCREEN = 1;

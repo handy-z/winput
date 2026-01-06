@@ -1,0 +1,43 @@
+{
+  "name": "@winput/utils",
+  "version": "1.0.0",
+  "description": "Utility functions for winput - color conversion, geometry helpers",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "bun build src/index.ts --outdir=dist --target=bun --format=esm --minify && bunx tsc --emitDeclarationOnly --outDir dist",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "bun",
+    "windows",
+    "utils",
+    "color",
+    "geometry"
+  ],
+  "author": "handy-z",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wuw-shz/winput.git",
+    "directory": "packages/utils"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

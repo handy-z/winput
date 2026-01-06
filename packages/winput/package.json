@@ -1,0 +1,54 @@
+{
+  "name": "winput",
+  "version": "1.0.1",
+  "description": "Windows automation library - keyboard, mouse, window, screen, image, and overlay control",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "bun build src/index.ts --outdir=dist --target=bun --format=esm --minify && bunx tsc --emitDeclarationOnly --outDir dist",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "windows",
+    "automation",
+    "keyboard",
+    "mouse",
+    "screen",
+    "window",
+    "image",
+    "overlay",
+    "bun",
+    "ffi"
+  ],
+  "author": "wuw-shz",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wuw-shz/winput.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wuw-shz/winput/issues"
+  },
+  "homepage": "https://github.com/wuw-shz/winput#readme",
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "os": ["win32"],
+  "dependencies": {
+    "@winput/keyboard": "workspace:*",
+    "@winput/mouse": "workspace:*",
+    "@winput/screen": "workspace:*",
+    "@winput/window": "workspace:*",
+    "@winput/image": "workspace:*",
+    "@winput/overlay": "workspace:*",
+    "@winput/utils": "workspace:*"
+  }
+}
