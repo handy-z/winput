@@ -9,7 +9,7 @@
  */
 
 import { createSpinner } from "nanospinner";
-import { readFileSync, writeFileSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, existsSync, statSync, readdirSync } from "fs";
 import { join } from "path";
 
 type BumpType = "patch" | "minor" | "major";
@@ -80,42 +80,58 @@ async function getNpmVersion(name: string): Promise<string | null> {
   }
 }
 
-async function getLastTag(): Promise<string | null> {
-  const { ok, out } = await exec("git", ["describe", "--tags", "--abbrev=0"], PROJECT_ROOT);
-  return ok ? out.trim() : null;
-}
-
-async function hasChanges(dir: string, sinceTag: string | null): Promise<boolean> {
-  const pkgPath = `packages/${dir}`;
+function getNewestTime(dir: string): number {
+  if (!existsSync(dir)) return 0;
+  let newest = 0;
   
-  const status = await exec("git", ["status", "--porcelain", "--", pkgPath], PROJECT_ROOT);
-  if (status.ok && status.out.trim().length > 0) return true;
-  
-  if (sinceTag) {
-    const diff = await exec("git", ["diff", "--name-only", sinceTag, "HEAD", "--", pkgPath], PROJECT_ROOT);
-    if (diff.ok && diff.out.trim().length > 0) return true;
+  function scan(path: string) {
+    const entries = readdirSync(path, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = join(path, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name !== "node_modules" && entry.name !== "dist") {
+          scan(fullPath);
+        }
+      } else if (entry.name.endsWith(".ts")) {
+        const mtime = statSync(fullPath).mtimeMs;
+        if (mtime > newest) newest = mtime;
+      }
+    }
   }
   
-  return false;
+  scan(dir);
+  return newest;
+}
+
+function getDistTime(dir: string): number {
+  const distPath = join(dir, "dist", "index.js");
+  if (!existsSync(distPath)) return 0;
+  return statSync(distPath).mtimeMs;
+}
+
+function hasCodeChanges(pkgDir: string): boolean {
+  const srcDir = join(pkgDir, "src");
+  const srcTime = getNewestTime(srcDir);
+  const distTime = getDistTime(pkgDir);
+  return srcTime > distTime;
 }
 
 async function getPackages(): Promise<PackageInfo[]> {
   const spinner = createSpinner("Checking packages").start();
-  
-  const lastTag = await getLastTag();
   
   const packages = await Promise.all(
     PUBLISH_ORDER.map(async (dir) => {
       const pkgPath = join(PACKAGES_DIR, dir, "package.json");
       if (!existsSync(pkgPath)) return null;
       
+      const pkgDir = join(PACKAGES_DIR, dir);
       const pkg = readPkg(pkgPath);
       const name = pkg.name as string;
       const version = pkg.version as string;
       const npmVersion = await getNpmVersion(name);
-      const changed = await hasChanges(dir, lastTag);
+      const codeChanged = hasCodeChanges(pkgDir);
       
-      const needsPublish = !npmVersion || version !== npmVersion || changed;
+      const needsPublish = !npmVersion || version > npmVersion || codeChanged;
       
       return {
         name,
@@ -128,7 +144,7 @@ async function getPackages(): Promise<PackageInfo[]> {
     })
   );
   
-  spinner.success({ text: `Checked packages${lastTag ? ` (since ${lastTag})` : ""}` });
+  spinner.success({ text: "Checked packages" });
   return packages.filter((p): p is PackageInfo => p !== null);
 }
 
