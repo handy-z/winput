@@ -1,6 +1,6 @@
 {
   "name": "@winput/overlay",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Windows overlay drawing for Bun - create transparent overlays and draw on screen",
   "type": "module",
   "main": "./dist/index.js",
