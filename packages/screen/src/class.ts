@@ -1,5 +1,4 @@
 import * as actions from "./actions";
-import { image } from "@winput/image";
 
 class Screen {
   /**
@@ -301,105 +300,7 @@ class Screen {
    */
   pixelSearch = actions.pixelSearch;
 
-  /**
-   * Searches for an image pattern within a screen region.
-   *
-   * Locates a template image within the specified rectangular area using
-   * pixel-by-pixel comparison. Supports loading images from files or using
-   * ImageData directly. Returns the top-left coordinates of the match.
-   *
-   * @param x1 - X coordinate of search region's first corner
-   * @param y1 - Y coordinate of search region's first corner
-   * @param x2 - X coordinate of search region's opposite corner
-   * @param y2 - Y coordinate of search region's opposite corner
-   * @param image - File path to template image OR ImageData object
-   * @param tolerance - Color matching tolerance (0-255, default: 0). Higher values allow more color variation
-   * @returns {Promise<Point | null>} Coordinates `{ x: number, y: number }` of match's top-left corner, or null if not found
-   * @example
-   * ```typescript
-   * // Search for button image on screen
-   * const buttonPos = await screen.imageSearch(
-   *   0, 0, 1920, 1080,
-   *   "assets/button.png",
-   *   10
-   * );
-   *
-   * if (buttonPos) {
-   *   console.log(`Button found at (${buttonPos.x}, ${buttonPos.y})`);
-   *   // Click on the button
-   *   mouse.moveTo(buttonPos.x + 50, buttonPos.y + 20);
-   *   mouse.click();
-   * }
-   *
-   * // Use ImageData directly
-   * const icon = await image.load("icon.png");
-   * if (icon) {
-   *   const iconPos = await screen.imageSearch(0, 0, 800, 600, icon.img);
-   *   console.log(`Icon found at`, iconPos);
-   * }
-   * ```
-   *
-   * Supported file formats:
-   * - `.png` - Portable Network Graphics (lossless)
-   * - `.jpg` / `.jpeg` - JPEG (lossy compression)
-   * - `.bmp` - Bitmap (uncompressed)
-   * - `.webp` - WebP (modern format)
-   * - `.gif` - Graphics Interchange Format (limited colors)
-   * - `.tiff` - Tagged Image File Format (high quality)
-   * - `.ico` - Icon format
-   * - `.heic` - High Efficiency Image Container
-   * - `.heif` - High Efficiency Image Format
-   * - `.avif` - AV1 Image File Format
-   * - `.svg` - Scalable Vector Graphics
-   * - `.raw` - Raw image data
-   */
-  imageSearch = actions.imageSearch;
 
-  /**
-   * Captures a screen region and performs OCR (Optical Character Recognition) on it.
-   *
-   * Combines screen capture with OCR in a single convenient method. Captures the specified
-   * rectangular region and extracts text using Tesseract OCR engine.
-   *
-   * @param x - X coordinate of capture region's top-left corner
-   * @param y - Y coordinate of capture region's top-left corner
-   * @param width - Width of capture region in pixels
-   * @param height - Height of capture region in pixels
-   * @param options - OCR configuration options
-   * @returns {Promise<import("../types/ocr").OCRResult | null>} Promise resolving to OCR result with extracted text, or null if failed
-   * @example
-   * ```typescript
-   * // Capture and recognize text from a screen region
-   * const result = await screen.recognizeText(100, 100, 400, 200);
-   * if (result) {
-   *   console.log("Text:", result.text);
-   *   console.log("Confidence:", result.confidence);
-   *
-   *   // Access individual words with bounding boxes
-   *   result.words.forEach(word => {
-   *     console.log(`"${word.text}" at (${word.bbox.x0}, ${word.bbox.y0})`);
-   *   });
-   * }
-   *
-   * // With language options
-   * const frenchText = await screen.recognizeText(0, 0, 800, 600, {
-   *   lang: "fra"
-   * });
-   * ```
-   */
-  async recognizeText(
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    options?: import("./types").OCROptions
-  ): Promise<import("./types").OCRResult | null> {
-    const capture = this.capture(x, y, width, height);
-    if (!capture) {
-      return null;
-    }
-    return image.process(capture).ocr.recognize(options);
-  }
 }
 
 /**

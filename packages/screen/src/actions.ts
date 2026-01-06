@@ -1,9 +1,7 @@
 import { user32, gdi32 } from "./core";
-import { loadImage } from "@winput/image";
 import { ptr, type Pointer, JSCallback } from "bun:ffi";
 import type { RGB, Point, ImageData } from "./types";
 import { utils } from "@winput/utils";
-import { image, Image } from "@winput/image";
 import { Pixel } from "./pixel";
 
 let cachedDC: Pointer | bigint | null = null;
@@ -161,116 +159,14 @@ export function pixelSearch(
   return null;
 }
 
-export async function imageSearch(
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  image: string | Image,
-  tolerance: number = 0
-): Promise<Point | null> {
-  let needle: Image;
 
-  if (typeof image === "string") {
-    const loaded = await loadImage(image);
-    if (!loaded) return null;
-    needle = loaded;
-  } else {
-    needle = image;
-  }
-
-  const left = Math.min(x1, x2);
-  const top = Math.min(y1, y2);
-  const right = Math.max(x1, x2);
-  const bottom = Math.max(y1, y2);
-  const width = right - left + 1;
-  const height = bottom - top + 1;
-
-  const haystack = capture(left, top, width, height);
-  if (!haystack) return null;
-
-  const nW = needle.width;
-  const nH = needle.height;
-  const hW = width;
-  const hH = height;
-
-  if (nW > hW || nH > hH) return null;
-
-  const check = (
-    r1: number,
-    g1: number,
-    b1: number,
-    r2: number,
-    g2: number,
-    b2: number
-  ) => {
-    if (tolerance === 0) {
-      return r1 === r2 && g1 === g2 && b1 === b2;
-    }
-    return (
-      Math.abs(r1 - r2) <= tolerance &&
-      Math.abs(g1 - g2) <= tolerance &&
-      Math.abs(b1 - b2) <= tolerance
-    );
-  };
-
-  for (let y = 0; y <= hH - nH; y++) {
-    for (let x = 0; x <= hW - nW; x++) {
-      let hIdx = (y * hW + x) * 4;
-      let nIdx = 0;
-
-      if (
-        !check(
-          haystack.buffer[hIdx + 2],
-          haystack.buffer[hIdx + 1],
-          haystack.buffer[hIdx],
-          needle.buffer[nIdx + 2],
-          needle.buffer[nIdx + 1],
-          needle.buffer[nIdx]
-        )
-      )
-        continue;
-
-      let match = true;
-      for (let ny = 0; ny < nH; ny++) {
-        for (let nx = 0; nx < nW; nx++) {
-          if (ny === 0 && nx === 0) continue;
-
-          hIdx = ((y + ny) * hW + (x + nx)) * 4;
-          nIdx = (ny * nW + nx) * 4;
-
-          if (
-            !check(
-              haystack.buffer[hIdx + 2],
-              haystack.buffer[hIdx + 1],
-              haystack.buffer[hIdx],
-              needle.buffer[nIdx + 2],
-              needle.buffer[nIdx + 1],
-              needle.buffer[nIdx]
-            )
-          ) {
-            match = false;
-            break;
-          }
-        }
-        if (!match) break;
-      }
-
-      if (match) {
-        return { x: left + x, y: top + y };
-      }
-    }
-  }
-
-  return null;
-}
 
 export function capture(
   x = 0,
   y = 0,
   width?: number,
   height?: number
-): Image | null {
+): ImageData | null {
   const w = width || user32.symbols.GetSystemMetrics(0);
   const h = height || user32.symbols.GetSystemMetrics(1);
 
@@ -339,11 +235,11 @@ export function capture(
 
   if (!buffer) return null;
 
-  return new Image({
+  return {
     width: w,
     height: h,
     buffer: buffer,
-  });
+  };
 }
 
 export function getMonitors(): Array<{
