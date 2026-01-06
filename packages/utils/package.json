@@ -31,7 +31,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wuw-shz/winput.git",
+    "url": "git+https://github.com/handy-z/winput.git",
     "directory": "packages/utils"
   },
   "engines": {

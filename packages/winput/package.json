@@ -28,16 +28,16 @@
     "bun",
     "ffi"
   ],
-  "author": "wuw-shz",
+  "author": "handy-z",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wuw-shz/winput.git"
+    "url": "git+https://github.com/handy-z/winput.git"
   },
   "bugs": {
-    "url": "https://github.com/wuw-shz/winput/issues"
+    "url": "https://github.com/handy-z/winput/issues"
   },
-  "homepage": "https://github.com/wuw-shz/winput#readme",
+  "homepage": "https://github.com/handy-z/winput#readme",
   "engines": {
     "bun": ">=1.0.0"
   },
