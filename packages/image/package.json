@@ -1,6 +1,6 @@
 {
   "name": "@winput/image",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Windows image processing for Bun - load, save, and transform images with chainable API",
   "type": "module",
   "main": "./dist/index.js",
