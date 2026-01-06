@@ -223,11 +223,6 @@ async function release() {
     console.log(`\n${c.yellow}Bumping versions (${bumpType}):${c.reset}\n`);
     
     for (const pkg of packages) {
-      if (!pkg.needsPublish) {
-        console.log(`${c.gray}○ ${pkg.name}@${pkg.version} (up to date)${c.reset}`);
-        continue;
-      }
-      
       const pkgPath = join(PACKAGES_DIR, pkg.dir, "package.json");
       const pkgJson = readPkg(pkgPath);
       const newVersion = bump(pkg.version, bumpType);
