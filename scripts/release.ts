@@ -121,21 +121,7 @@ async function hasUncommittedChanges(pkgName: string): Promise<boolean> {
     PROJECT_ROOT
   );
 
-  if (statusResult.success && statusResult.output.trim().length > 0) {
-    return true;
-  }
-
-  const diffResult = await runCommand(
-    "git",
-    ["diff", "--name-only", "HEAD~1", "HEAD", "--", pkgPath],
-    PROJECT_ROOT
-  );
-
-  if (diffResult.success && diffResult.output.trim().length > 0) {
-    return true;
-  }
-
-  return false;
+  return statusResult.success && statusResult.output.trim().length > 0;
 }
 
 async function needsPublish(
