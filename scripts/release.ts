@@ -279,15 +279,17 @@ async function release() {
   );
 
   let failed = 0;
+  let succeeded = 0;
   for (const pkg of packages) {
     const ok = await publish(pkg, dryRun);
     if (!ok) failed++;
+    else if (pkg.needsPublish) succeeded++;
   }
 
   const winputPkg = packages.find((p) => p.dir === "winput");
   const version = winputPkg?.version || "latest";
 
-  if (bumpType && !dryRun) {
+  if (bumpType && !dryRun && succeeded > 0) {
     console.log();
     await commitAndPush(version);
   }
