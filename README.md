@@ -1,5 +1,6 @@
 # winput 🚀
 
+[![GitHub release](https://img.shields.io/github/v/tag/handy-z/winput?label=release)](https://github.com/handy-z/winput/releases)
 [![npm version](https://img.shields.io/npm/v/winput.svg)](https://www.npmjs.com/package/winput)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=flat&logo=bun&logoColor=white)](https://bun.sh)
