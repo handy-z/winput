@@ -43,6 +43,7 @@ interface PackageInfo {
   name: string;
   dir: string;
   version: string;
+  originalVersion: string;
   npmVersion: string | null;
   needsPublish: boolean;
 }
@@ -96,6 +97,7 @@ async function getPackages(): Promise<PackageInfo[]> {
         name,
         dir,
         version,
+        originalVersion: version,
         npmVersion,
         needsPublish: !npmVersion || version !== npmVersion,
       };
@@ -127,6 +129,15 @@ async function publish(pkg: PackageInfo, dryRun: boolean): Promise<boolean> {
     spinner.error({ text: `${pkg.name} failed` });
     if (out.includes("cannot be republished")) {
       console.log(`${c.gray}  ↳ npm lockout (24h wait)${c.reset}`);
+    }
+    
+    if (pkg.version !== pkg.originalVersion) {
+      const pkgPath = join(PACKAGES_DIR, pkg.dir, "package.json");
+      const pkgJson = readPkg(pkgPath);
+      pkgJson.version = pkg.originalVersion;
+      writePkg(pkgPath, pkgJson);
+      console.log(`${c.gray}  ↳ restored ${pkg.originalVersion}${c.reset}`);
+      pkg.version = pkg.originalVersion;
     }
   }
   
