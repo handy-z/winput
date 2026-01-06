@@ -1,6 +1,6 @@
 {
   "name": "@winput/utils",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Utility functions for winput - color conversion, geometry helpers",
   "type": "module",
   "main": "./dist/index.js",
