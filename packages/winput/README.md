@@ -46,15 +46,15 @@ const hex = utils.rgbToHex({ r: 255, g: 128, b: 0 });
 
 ## Packages
 
-| Package | Description |
-|---------|-------------|
-| [`@winput/keyboard`](https://www.npmjs.com/package/@winput/keyboard) | Keyboard automation |
-| [`@winput/mouse`](https://www.npmjs.com/package/@winput/mouse) | Mouse automation |
-| [`@winput/window`](https://www.npmjs.com/package/@winput/window) | Window management |
-| [`@winput/screen`](https://www.npmjs.com/package/@winput/screen) | Screen capture & pixels |
-| [`@winput/image`](https://www.npmjs.com/package/@winput/image) | Image processing |
-| [`@winput/overlay`](https://www.npmjs.com/package/@winput/overlay) | On-screen drawing |
-| [`@winput/utils`](https://www.npmjs.com/package/@winput/utils) | Color & geometry utils |
+| Package                                                              | Description             |
+| -------------------------------------------------------------------- | ----------------------- |
+| [`@winput/keyboard`](https://www.npmjs.com/package/@winput/keyboard) | Keyboard automation     |
+| [`@winput/mouse`](https://www.npmjs.com/package/@winput/mouse)       | Mouse automation        |
+| [`@winput/window`](https://www.npmjs.com/package/@winput/window)     | Window management       |
+| [`@winput/screen`](https://www.npmjs.com/package/@winput/screen)     | Screen capture & pixels |
+| [`@winput/image`](https://www.npmjs.com/package/@winput/image)       | Image processing        |
+| [`@winput/overlay`](https://www.npmjs.com/package/@winput/overlay)   | On-screen drawing       |
+| [`@winput/utils`](https://www.npmjs.com/package/@winput/utils)       | Color & geometry utils  |
 
 ## Requirements
 

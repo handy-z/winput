@@ -32,62 +32,71 @@ mouse.listener.start();
 
 ### mouse
 
-| Method | Params | Returns | Description |
-|--------|--------|---------|-------------|
-| `position` | - | [`Position`](#position) | Cursor coordinates |
-| `moveTo(x, y, relative?)` | `number`, `number`, `boolean` | [`Mouse`](#mouse) | Move to position |
-| `moveRel(dx, dy)` | `number`, `number` | [`Mouse`](#mouse) | Move relative |
-| `smoothMoveTo(x, y, duration?, easing?)` | `number`, `number`, `number`, [`Easing`](#easing) | `Promise<Mouse>` | Animated move |
-| `click(button?, repeat?, delay?)` | [`MouseButton`](#mousebutton), `number`, `number` | [`Mouse`](#mouse) | Click button |
-| `clickAt(x, y, button?)` | `number`, `number`, [`MouseButton`](#mousebutton) | [`Mouse`](#mouse) | Move and click |
-| `press(button)` | [`MouseButton`](#mousebutton) | [`Mouse`](#mouse) | Press button |
-| `release(button)` | [`MouseButton`](#mousebutton) | [`Mouse`](#mouse) | Release button |
-| `hold(button, duration)` | [`MouseButton`](#mousebutton), `number` | [`Mouse`](#mouse) | Hold button |
-| `dragTo(x, y, button?, duration?)` | `number`, `number`, [`MouseButton`](#mousebutton), `number` | [`Mouse`](#mouse) | Drag to position |
-| `dragRel(dx, dy, button?, duration?)` | `number`, `number`, [`MouseButton`](#mousebutton), `number` | [`Mouse`](#mouse) | Drag relative |
-| `scroll(clicks, direction?)` | `number`, [`Direction`](#direction) | [`Mouse`](#mouse) | Scroll wheel |
-| `isPressed(button)` | [`MouseButton`](#mousebutton) | `boolean` | Check state |
-| `isAtPosition(x, y, tolerance?)` | `number`, `number`, `number` | `boolean` | Check position |
-| `waitForPosition(x, y, timeout?, tolerance?)` | `number`, `number`, `number`, `number` | `Promise<boolean>` | Wait for pos |
-| `waitForPress(button, timeout?)` | [`MouseButton`](#mousebutton), `number` | `Promise<boolean>` | Wait for press |
-| `waitForRelease(button, timeout?)` | [`MouseButton`](#mousebutton), `number` | `Promise<boolean>` | Wait for release |
-| `listener` | - | [`Listener`](#listener) | Event listener |
+| Method                                        | Params                                                      | Returns                 | Description        |
+| --------------------------------------------- | ----------------------------------------------------------- | ----------------------- | ------------------ |
+| `position`                                    | -                                                           | [`Position`](#position) | Cursor coordinates |
+| `moveTo(x, y, relative?)`                     | `number`, `number`, `boolean`                               | [`Mouse`](#mouse)       | Move to position   |
+| `moveRel(dx, dy)`                             | `number`, `number`                                          | [`Mouse`](#mouse)       | Move relative      |
+| `smoothMoveTo(x, y, duration?, easing?)`      | `number`, `number`, `number`, [`Easing`](#easing)           | `Promise<Mouse>`        | Animated move      |
+| `click(button?, repeat?, delay?)`             | [`MouseButton`](#mousebutton), `number`, `number`           | [`Mouse`](#mouse)       | Click button       |
+| `clickAt(x, y, button?)`                      | `number`, `number`, [`MouseButton`](#mousebutton)           | [`Mouse`](#mouse)       | Move and click     |
+| `press(button)`                               | [`MouseButton`](#mousebutton)                               | [`Mouse`](#mouse)       | Press button       |
+| `release(button)`                             | [`MouseButton`](#mousebutton)                               | [`Mouse`](#mouse)       | Release button     |
+| `hold(button, duration)`                      | [`MouseButton`](#mousebutton), `number`                     | [`Mouse`](#mouse)       | Hold button        |
+| `dragTo(x, y, button?, duration?)`            | `number`, `number`, [`MouseButton`](#mousebutton), `number` | [`Mouse`](#mouse)       | Drag to position   |
+| `dragRel(dx, dy, button?, duration?)`         | `number`, `number`, [`MouseButton`](#mousebutton), `number` | [`Mouse`](#mouse)       | Drag relative      |
+| `scroll(clicks, direction?)`                  | `number`, [`Direction`](#direction)                         | [`Mouse`](#mouse)       | Scroll wheel       |
+| `isPressed(button)`                           | [`MouseButton`](#mousebutton)                               | `boolean`               | Check state        |
+| `isAtPosition(x, y, tolerance?)`              | `number`, `number`, `number`                                | `boolean`               | Check position     |
+| `waitForPosition(x, y, timeout?, tolerance?)` | `number`, `number`, `number`, `number`                      | `Promise<boolean>`      | Wait for pos       |
+| `waitForPress(button, timeout?)`              | [`MouseButton`](#mousebutton), `number`                     | `Promise<boolean>`      | Wait for press     |
+| `waitForRelease(button, timeout?)`            | [`MouseButton`](#mousebutton), `number`                     | `Promise<boolean>`      | Wait for release   |
+| `listener`                                    | -                                                           | [`Listener`](#listener) | Event listener     |
 
 ### Listener
 
-| Method | Params | Returns | Description |
-|--------|--------|---------|-------------|
-| `on.move(handler)` | [`MouseHandler`](#mousehandler) | `void` | Mouse moved |
-| `on.down(handler)` | [`MouseHandler`](#mousehandler) | `void` | Button pressed |
-| `on.up(handler)` | [`MouseHandler`](#mousehandler) | `void` | Button released |
-| `start()` | - | `void` | Start listening |
-| `stop()` | - | `void` | Stop listening |
+| Method             | Params                          | Returns | Description     |
+| ------------------ | ------------------------------- | ------- | --------------- |
+| `on.move(handler)` | [`MouseHandler`](#mousehandler) | `void`  | Mouse moved     |
+| `on.down(handler)` | [`MouseHandler`](#mousehandler) | `void`  | Button pressed  |
+| `on.up(handler)`   | [`MouseHandler`](#mousehandler) | `void`  | Button released |
+| `start()`          | -                               | `void`  | Start listening |
+| `stop()`           | -                               | `void`  | Stop listening  |
 
 ## Types
 
 ### Position
 
 ```typescript
-{ x: number; y: number }
+{
+  x: number;
+  y: number;
+}
 ```
 
 ### MouseButton
 
 ```typescript
-type MouseButton = "left" | "right" | "middle" | "x1" | "x2"
+type MouseButton = "left" | "right" | "middle" | "x1" | "x2";
 ```
 
 ### Direction
 
 ```typescript
-type Direction = "vertical" | "horizontal"
+type Direction = "vertical" | "horizontal";
 ```
 
 ### Easing
 
 ```typescript
-type Easing = "linear" | "easeInQuad" | "easeOutQuad" | "easeInOutQuad" 
-            | "easeInCubic" | "easeOutCubic" | "easeInOutCubic"
+type Easing =
+  | "linear"
+  | "easeInQuad"
+  | "easeOutQuad"
+  | "easeInOutQuad"
+  | "easeInCubic"
+  | "easeOutCubic"
+  | "easeInOutCubic";
 ```
 
 ### MouseEvent
@@ -104,16 +113,16 @@ type Easing = "linear" | "easeInQuad" | "easeOutQuad" | "easeInOutQuad"
 ### MouseHandler
 
 ```typescript
-type MouseHandler = (event: MouseEvent) => void
+type MouseHandler = (event: MouseEvent) => void;
 ```
 
 ## Exports
 
-| Export | Type | Description |
-|--------|------|-------------|
-| `mouse` | [`Mouse`](#mouse) | Main mouse operations |
-| `LEFT`, `RIGHT`, `MIDDLE` | [`MouseButton`](#mousebutton) | Button constants |
-| `X1`, `X2` | [`MouseButton`](#mousebutton) | Extended buttons |
+| Export                    | Type                          | Description           |
+| ------------------------- | ----------------------------- | --------------------- |
+| `mouse`                   | [`Mouse`](#mouse)             | Main mouse operations |
+| `LEFT`, `RIGHT`, `MIDDLE` | [`MouseButton`](#mousebutton) | Button constants      |
+| `X1`, `X2`                | [`MouseButton`](#mousebutton) | Extended buttons      |
 
 ## License
 

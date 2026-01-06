@@ -39,49 +39,65 @@ const inside = utils.pointInRect(
 
 ### utils
 
-| Method | Params | Returns | Description |
-|--------|--------|---------|-------------|
-| `rgbToHex(rgb)` | [`RGB`](#rgb) | `string` | RGB to hex string |
-| `hexToRgb(hex)` | `string` | [`RGB`](#rgb) | Hex to RGB |
-| `rgbToHsv(r, g, b)` | `number`, `number`, `number` | [`HSV`](#hsv) | RGB to HSV |
-| `hsvToRgb(h, s, v)` | `number`, `number`, `number` | [`RGB`](#rgb) | HSV to RGB |
-| `colorDistance(c1, c2)` | [`RGB`](#rgb), [`RGB`](#rgb) | `number` | Distance (0-441) |
-| `isColorSimilar(c1, c2, tolerance)` | [`RGB`](#rgb), [`RGB`](#rgb), `number` | `boolean` | Check similarity |
-| `pointInRect(point, rect)` | [`Point`](#point), [`Rect`](#rect) | `boolean` | Point in rectangle |
+| Method                              | Params                                 | Returns       | Description        |
+| ----------------------------------- | -------------------------------------- | ------------- | ------------------ |
+| `rgbToHex(rgb)`                     | [`RGB`](#rgb)                          | `string`      | RGB to hex string  |
+| `hexToRgb(hex)`                     | `string`                               | [`RGB`](#rgb) | Hex to RGB         |
+| `rgbToHsv(r, g, b)`                 | `number`, `number`, `number`           | [`HSV`](#hsv) | RGB to HSV         |
+| `hsvToRgb(h, s, v)`                 | `number`, `number`, `number`           | [`RGB`](#rgb) | HSV to RGB         |
+| `colorDistance(c1, c2)`             | [`RGB`](#rgb), [`RGB`](#rgb)           | `number`      | Distance (0-441)   |
+| `isColorSimilar(c1, c2, tolerance)` | [`RGB`](#rgb), [`RGB`](#rgb), `number` | `boolean`     | Check similarity   |
+| `pointInRect(point, rect)`          | [`Point`](#point), [`Rect`](#rect)     | `boolean`     | Point in rectangle |
 
 ## Types
 
 ### RGB
 
 ```typescript
-{ r: number; g: number; b: number }
+{
+  r: number;
+  g: number;
+  b: number;
+}
 ```
 
 ### HSV
 
 ```typescript
-{ h: number; s: number; v: number }
+{
+  h: number;
+  s: number;
+  v: number;
+}
 ```
 
 ### Point
 
 ```typescript
-{ x: number; y: number }
+{
+  x: number;
+  y: number;
+}
 ```
 
 ### Rect
 
 ```typescript
-{ left: number; top: number; right: number; bottom: number }
+{
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
 ```
 
 ## Exports
 
-| Export | Type | Description |
-|--------|------|-------------|
+| Export  | Type              | Description            |
+| ------- | ----------------- | ---------------------- |
 | `utils` | [`Utils`](#utils) | Main utility functions |
-| `RGB` | [`RGB`](#rgb) | RGB color structure |
-| `HSV` | [`HSV`](#hsv) | HSV color structure |
+| `RGB`   | [`RGB`](#rgb)     | RGB color structure    |
+| `HSV`   | [`HSV`](#hsv)     | HSV color structure    |
 
 ## License
 
