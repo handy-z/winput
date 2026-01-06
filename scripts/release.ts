@@ -9,7 +9,7 @@
  */
 
 import { createSpinner } from "nanospinner";
-import { readFileSync, writeFileSync, existsSync, statSync, readdirSync } from "fs";
+import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join } from "path";
 
 type BumpType = "patch" | "minor" | "major";
@@ -64,7 +64,11 @@ function bump(version: string, type: BumpType): string {
 }
 
 async function exec(cmd: string, args: string[], cwd = PROJECT_ROOT) {
-  const proc = Bun.spawn([cmd, ...args], { cwd, stdout: "pipe", stderr: "pipe" });
+  const proc = Bun.spawn([cmd, ...args], {
+    cwd,
+    stdout: "pipe",
+    stderr: "pipe",
+  });
   const out = await new Response(proc.stdout).text();
   const err = await new Response(proc.stderr).text();
   return { ok: (await proc.exited) === 0, out: out + err };
@@ -80,59 +84,49 @@ async function getNpmVersion(name: string): Promise<string | null> {
   }
 }
 
-function getNewestTime(dir: string): number {
-  if (!existsSync(dir)) return 0;
-  let newest = 0;
-  
-  function scan(path: string) {
-    const entries = readdirSync(path, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = join(path, entry.name);
-      if (entry.isDirectory()) {
-        if (entry.name !== "node_modules" && entry.name !== "dist") {
-          scan(fullPath);
-        }
-      } else if (entry.name.endsWith(".ts")) {
-        const mtime = statSync(fullPath).mtimeMs;
-        if (mtime > newest) newest = mtime;
-      }
-    }
-  }
-  
-  scan(dir);
-  return newest;
+async function getLastTag(): Promise<string | null> {
+  const { ok, out } = await exec("git", ["describe", "--tags", "--abbrev=0"]);
+  if (!ok) return null;
+  return out.trim() || null;
 }
 
-function getDistTime(dir: string): number {
-  const distPath = join(dir, "dist", "index.js");
-  if (!existsSync(distPath)) return 0;
-  return statSync(distPath).mtimeMs;
-}
+async function hasCodeChanges(pkgDir: string): Promise<boolean> {
+  const lastTag = await getLastTag();
+  if (!lastTag) return true;
 
-function hasCodeChanges(pkgDir: string): boolean {
-  const srcDir = join(pkgDir, "src");
-  const srcTime = getNewestTime(srcDir);
-  const distTime = getDistTime(pkgDir);
-  return srcTime > distTime;
+  const relativePath = pkgDir.replace(PROJECT_ROOT, "").replace(/^[/\\]/, "");
+  const srcPath = join(relativePath, "src").replace(/\\/g, "/");
+
+  const { ok, out } = await exec("git", [
+    "diff",
+    "--name-only",
+    lastTag,
+    "HEAD",
+    "--",
+    srcPath,
+  ]);
+  if (!ok) return true;
+
+  return out.trim().length > 0;
 }
 
 async function getPackages(): Promise<PackageInfo[]> {
   const spinner = createSpinner("Checking packages").start();
-  
+
   const packages = await Promise.all(
     PUBLISH_ORDER.map(async (dir) => {
       const pkgPath = join(PACKAGES_DIR, dir, "package.json");
       if (!existsSync(pkgPath)) return null;
-      
+
       const pkgDir = join(PACKAGES_DIR, dir);
       const pkg = readPkg(pkgPath);
       const name = pkg.name as string;
       const version = pkg.version as string;
       const npmVersion = await getNpmVersion(name);
-      const codeChanged = hasCodeChanges(pkgDir);
-      
+      const codeChanged = await hasCodeChanges(pkgDir);
+
       const needsPublish = !npmVersion || version > npmVersion || codeChanged;
-      
+
       return {
         name,
         dir,
@@ -143,7 +137,7 @@ async function getPackages(): Promise<PackageInfo[]> {
       };
     })
   );
-  
+
   spinner.success({ text: "Checked packages" });
   return packages.filter((p): p is PackageInfo => p !== null);
 }
@@ -153,16 +147,22 @@ async function publish(pkg: PackageInfo, dryRun: boolean): Promise<boolean> {
     console.log(`${c.gray}○ ${pkg.name}@${pkg.version} (up to date)${c.reset}`);
     return true;
   }
-  
-  const spinner = createSpinner(`Publishing ${pkg.name}@${pkg.version}`).start();
-  
+
+  const spinner = createSpinner(
+    `Publishing ${pkg.name}@${pkg.version}`
+  ).start();
+
   if (dryRun) {
     spinner.success({ text: `${pkg.name}@${pkg.version} (dry run)` });
     return true;
   }
-  
-  const { ok, out } = await exec("npm", ["publish", "--access", "public"], join(PACKAGES_DIR, pkg.dir));
-  
+
+  const { ok, out } = await exec(
+    "npm",
+    ["publish", "--access", "public"],
+    join(PACKAGES_DIR, pkg.dir)
+  );
+
   if (ok) {
     spinner.success({ text: `${pkg.name}@${pkg.version}` });
   } else {
@@ -170,7 +170,7 @@ async function publish(pkg: PackageInfo, dryRun: boolean): Promise<boolean> {
     if (out.includes("cannot be republished")) {
       console.log(`${c.gray}  ↳ npm lockout (24h wait)${c.reset}`);
     }
-    
+
     if (pkg.version !== pkg.originalVersion) {
       const pkgPath = join(PACKAGES_DIR, pkg.dir, "package.json");
       const pkgJson = readPkg(pkgPath);
@@ -180,25 +180,25 @@ async function publish(pkg: PackageInfo, dryRun: boolean): Promise<boolean> {
       pkg.version = pkg.originalVersion;
     }
   }
-  
+
   return ok;
 }
 
 async function commitAndPush(version: string): Promise<void> {
   const spinner = createSpinner("Committing changes").start();
-  
+
   await exec("git", ["add", "-A"]);
   const commit = await exec("git", ["commit", "-m", `release: v${version}`]);
-  
+
   if (!commit.ok) {
     spinner.warn({ text: "Nothing to commit" });
     return;
   }
-  
+
   const push = await exec("git", ["push", "origin", "main"]);
   if (push.ok) {
     spinner.success({ text: `Pushed v${version}` });
-    
+
     await exec("git", ["tag", `v${version}`]);
     await exec("git", ["push", "origin", `v${version}`]);
     console.log(`${c.green}✓ Tagged v${version}${c.reset}`);
@@ -210,19 +210,27 @@ async function commitAndPush(version: string): Promise<void> {
 async function release() {
   const args = process.argv.slice(2);
   const dryRun = args.includes("--dry-run");
-  const bumpType = args.map(a => a.replace(/^--/, ""))
-    .find(a => ["patch", "minor", "major"].includes(a)) as BumpType | undefined;
+  const bumpType = args
+    .map((a) => a.replace(/^--/, ""))
+    .find((a) => ["patch", "minor", "major"].includes(a)) as
+    | BumpType
+    | undefined;
 
   console.log(`${c.bright}${c.cyan}╭────────────────────────╮${c.reset}`);
   console.log(`${c.bright}${c.cyan}│   @winput/* Release    │${c.reset}`);
   console.log(`${c.bright}${c.cyan}╰────────────────────────╯${c.reset}\n`);
 
   const packages = await getPackages();
-  
+
   if (bumpType) {
     console.log(`\n${c.yellow}Bumping versions (${bumpType}):${c.reset}\n`);
-    
+
     for (const pkg of packages) {
+      if (!pkg.needsPublish) {
+        console.log(`${c.gray}○ ${pkg.name}@${pkg.version} (up to date)${c.reset}`);
+        continue;
+      }
+
       const pkgPath = join(PACKAGES_DIR, pkg.dir, "package.json");
       const pkgJson = readPkg(pkgPath);
       const newVersion = bump(pkg.version, bumpType);
@@ -230,19 +238,23 @@ async function release() {
       writePkg(pkgPath, pkgJson);
       pkg.version = newVersion;
       pkg.needsPublish = true;
-      
-      console.log(`${c.cyan}● ${pkg.name}${c.reset} → ${c.green}${newVersion}${c.reset}`);
+
+      console.log(
+        `${c.cyan}● ${pkg.name}${c.reset} → ${c.green}${newVersion}${c.reset}`
+      );
     }
   }
 
-  const toPublish = packages.filter(p => p.needsPublish);
-  
+  const toPublish = packages.filter((p) => p.needsPublish);
+
   if (toPublish.length === 0) {
     console.log(`\n${c.yellow}All packages are up to date.${c.reset}\n`);
     return;
   }
 
-  console.log(`\n${c.bright}Publishing ${toPublish.length} package(s):${c.reset}\n`);
+  console.log(
+    `\n${c.bright}Publishing ${toPublish.length} package(s):${c.reset}\n`
+  );
 
   let failed = 0;
   for (const pkg of packages) {
@@ -250,7 +262,7 @@ async function release() {
     if (!ok) failed++;
   }
 
-  const winputPkg = packages.find(p => p.dir === "winput");
+  const winputPkg = packages.find((p) => p.dir === "winput");
   const version = winputPkg?.version || "latest";
 
   if (bumpType && !dryRun) {
@@ -260,7 +272,9 @@ async function release() {
 
   console.log();
   if (failed === 0) {
-    console.log(`${c.bright}${c.bgGreen}${c.white} ✨ All packages published! ${c.reset}\n`);
+    console.log(
+      `${c.bright}${c.bgGreen}${c.white} ✨ All packages published! ${c.reset}\n`
+    );
   } else {
     console.log(`${c.brightRed}✗ ${failed} package(s) failed${c.reset}\n`);
     process.exit(1);
