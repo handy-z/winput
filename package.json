@@ -4,7 +4,9 @@
   "workspaces": ["packages/*"],
   "type": "module",
   "scripts": {
-    "build": "bun run --filter '*' clean && bun run --filter '*' build",
+    "build": "bun run scripts/build.ts",
+    "build:force": "bun run scripts/build.ts --force",
+    "build:all": "bun run --filter '*' clean && bun run --filter '*' build",
     "test": "bun test",
     "commit": "bun run build && bun run scripts/commit.ts",
     "release": "bun run build && bun run scripts/release.ts"
