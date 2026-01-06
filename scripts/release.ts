@@ -90,34 +90,8 @@ async function getNpmVersion(name: string): Promise<string | null> {
   }
 }
 
-async function getNpmPublishTime(name: string): Promise<number | null> {
-  const { ok, out } = await exec("npm", ["view", name, "time", "--json"]);
-  if (!ok) return null;
-  try {
-    const times = JSON.parse(out.trim()) as Record<string, string>;
-    const version = await getNpmVersion(name);
-    if (!version || !times[version]) return null;
-    return new Date(times[version]).getTime();
-  } catch {
-    return null;
-  }
-}
-
-async function hasCodeChanges(
-  pkgDir: string,
-  pkgName: string
-): Promise<boolean> {
-  const publishTime = await getNpmPublishTime(pkgName);
-  if (!publishTime) return true;
-
-  const srcDir = join(pkgDir, "src");
-  if (!existsSync(srcDir)) return true;
-
-  const srcTime = getNewestTime(srcDir);
-  return srcTime > publishTime;
-}
-
 function getNewestTime(dir: string): number {
+  if (!existsSync(dir)) return 0;
   let newest = 0;
 
   function scan(path: string) {
@@ -128,7 +102,7 @@ function getNewestTime(dir: string): number {
         if (entry.name !== "node_modules" && entry.name !== "dist") {
           scan(fullPath);
         }
-      } else if (entry.name.endsWith(".ts")) {
+      } else if (entry.name.endsWith(".ts") || entry.name.endsWith(".tsx")) {
         const mtime = statSync(fullPath).mtimeMs;
         if (mtime > newest) newest = mtime;
       }
@@ -137,6 +111,19 @@ function getNewestTime(dir: string): number {
 
   scan(dir);
   return newest;
+}
+
+function getDistTime(pkgDir: string): number {
+  const distPath = join(pkgDir, "dist", "index.js");
+  if (!existsSync(distPath)) return 0;
+  return statSync(distPath).mtimeMs;
+}
+
+function hasCodeChanges(pkgDir: string): boolean {
+  const srcDir = join(pkgDir, "src");
+  const srcTime = getNewestTime(srcDir);
+  const distTime = getDistTime(pkgDir);
+  return srcTime > distTime;
 }
 
 async function getPackages(): Promise<PackageInfo[]> {
@@ -152,7 +139,7 @@ async function getPackages(): Promise<PackageInfo[]> {
       const name = pkg.name as string;
       const version = pkg.version as string;
       const npmVersion = await getNpmVersion(name);
-      const codeChanged = await hasCodeChanges(pkgDir, name);
+      const codeChanged = hasCodeChanges(pkgDir);
 
       const needsPublish = !npmVersion || version > npmVersion || codeChanged;
 
@@ -169,6 +156,39 @@ async function getPackages(): Promise<PackageInfo[]> {
 
   spinner.success({ text: "Checked packages" });
   return packages.filter((p): p is PackageInfo => p !== null);
+}
+
+async function buildPackages(packages: PackageInfo[]): Promise<boolean> {
+  const toBuild = packages.filter((p) => p.needsPublish);
+  if (toBuild.length === 0) return true;
+
+  console.log(`\n${c.yellow}Building ${toBuild.length} package(s):${c.reset}\n`);
+
+  for (const pkg of packages) {
+    if (!pkg.needsPublish) {
+      console.log(`${c.gray}○ ${pkg.name} (up to date)${c.reset}`);
+      continue;
+    }
+
+    const spinner = createSpinner(`Building ${pkg.name}`).start();
+    const pkgDir = join(PACKAGES_DIR, pkg.dir);
+
+    const cleanResult = await exec("bun", ["run", "clean"], pkgDir);
+    if (!cleanResult.ok) {
+      spinner.error({ text: `${pkg.name} clean failed` });
+      return false;
+    }
+
+    const buildResult = await exec("bun", ["run", "build"], pkgDir);
+    if (!buildResult.ok) {
+      spinner.error({ text: `${pkg.name} build failed` });
+      return false;
+    }
+
+    spinner.success({ text: pkg.name });
+  }
+
+  return true;
 }
 
 async function publish(pkg: PackageInfo, dryRun: boolean): Promise<boolean> {
@@ -272,6 +292,12 @@ async function release() {
   if (toPublish.length === 0) {
     console.log(`\n${c.yellow}All packages are up to date.${c.reset}\n`);
     return;
+  }
+
+  const buildOk = await buildPackages(packages);
+  if (!buildOk) {
+    console.log(`\n${c.brightRed}✗ Build failed${c.reset}\n`);
+    process.exit(1);
   }
 
   console.log(

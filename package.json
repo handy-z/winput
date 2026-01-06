@@ -9,7 +9,7 @@
     "build:all": "bun run --filter '*' clean && bun run --filter '*' build",
     "test": "bun test",
     "commit": "bun run build && bun run scripts/commit.ts",
-    "release": "bun run build && bun run scripts/release.ts"
+    "release": "bun run scripts/release.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
