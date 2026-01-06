@@ -1,6 +1,6 @@
 {
   "name": "@winput/window",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Windows window management for Bun - find, move, resize, and manipulate windows",
   "type": "module",
   "main": "./dist/index.js",
@@ -42,7 +42,7 @@
     "win32"
   ],
   "dependencies": {
-    "@winput/screen": "workspace:*"
+    "@winput/screen": "latest"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

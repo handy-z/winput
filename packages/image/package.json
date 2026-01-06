@@ -1,6 +1,6 @@
 {
   "name": "@winput/image",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Windows image processing for Bun - load, save, and transform images with chainable API",
   "type": "module",
   "main": "./dist/index.js",
@@ -43,8 +43,8 @@
   ],
   "dependencies": {
     "tesseract.js": "^7.0.0",
-    "@winput/window": "workspace:*",
-    "@winput/utils": "workspace:*"
+    "@winput/window": "latest",
+    "@winput/utils": "latest"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

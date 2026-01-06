@@ -1,6 +1,6 @@
 {
   "name": "@winput/overlay",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Windows overlay drawing for Bun - create transparent overlays and draw on screen",
   "type": "module",
   "main": "./dist/index.js",
@@ -42,7 +42,7 @@
     "win32"
   ],
   "dependencies": {
-    "@winput/window": "workspace:*"
+    "@winput/window": "latest"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
