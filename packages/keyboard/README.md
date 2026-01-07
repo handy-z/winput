@@ -7,7 +7,7 @@ Keyboard automation for Windows - simulate keystrokes, hotkeys, and monitor key 
 ## Requirements
 
 - **OS**: Windows 64-bit
-- **Runtime**: [Bun](https://bun.sh) (npm not supported)
+- **Runtime**: [Bun](https://bun.sh) (Node.js not supported)
 
 ## Installation
 

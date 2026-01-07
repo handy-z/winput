@@ -7,7 +7,7 @@ Mouse automation for Windows - move, click, drag, scroll, and monitor mouse stat
 ## Requirements
 
 - **OS**: Windows 64-bit
-- **Runtime**: [Bun](https://bun.sh) (npm not supported)
+- **Runtime**: [Bun](https://bun.sh) (Node.js not supported)
 
 ## Installation
 

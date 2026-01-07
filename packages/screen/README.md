@@ -7,7 +7,7 @@ Screen capture and pixel analysis for Windows.
 ## Requirements
 
 - **OS**: Windows 64-bit
-- **Runtime**: [Bun](https://bun.sh) (npm not supported)
+- **Runtime**: [Bun](https://bun.sh) (Node.js not supported)
 
 ## Installation
 

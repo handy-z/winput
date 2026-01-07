@@ -7,7 +7,7 @@ Window management for Windows - find, move, resize, and manipulate windows.
 ## Requirements
 
 - **OS**: Windows 64-bit
-- **Runtime**: [Bun](https://bun.sh) (npm not supported)
+- **Runtime**: [Bun](https://bun.sh) (Node.js not supported)
 
 ## Installation
 
